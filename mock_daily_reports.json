@@ -1,0 +1,262 @@
+[
+  {
+    "report_id": "REP-20261005-01",
+    "date": "2026-10-05",
+    "author": "陳大明",
+    "role": "高級前端工程師",
+    "project": "X專案 (內部管理系統)",
+    "tasks_completed": [
+      "完成 React 使用者對話介面 UI 繪製與 Markdown 渲染功能",
+      "修復 Bug #1024：前端對話視窗在中斷網路時未顯示提示訊息"
+    ],
+    "issues_and_blockers": "無",
+    "tomorrow_plan": "進行與 Java 後端 API 的端點對接測試"
+  },
+  {
+    "report_id": "REP-20261005-02",
+    "date": "2026-10-05",
+    "author": "林小華",
+    "role": "雲端架構工程師",
+    "project": "雲端基建與維運",
+    "tasks_completed": [
+      "完成測試機環境配置，IP 設定為 192.168.1.105",
+      "部署 Docker 容器化資料庫（ChromaDB 向量資料庫）"
+    ],
+    "issues_and_blockers": "測試機記憶體不足，目前已調整 Swappiness 參數暫時緩解",
+    "tomorrow_plan": "協助張威廉架設 GitHub MCP 伺服器之測試網域"
+  },
+  {
+    "report_id": "REP-20261005-03",
+    "date": "2026-10-05",
+    "author": "張威廉",
+    "role": "後端工程師",
+    "project": "Y專案 (API Gateway)",
+    "tasks_completed": [
+      "撰寫 Java Spring Boot 基礎架構與 JWT Token 驗證邏輯",
+      "實作初步輸入過濾驗證功能"
+    ],
+    "issues_and_blockers": "無",
+    "tomorrow_plan": "開發意圖分類（Intent Classifier）模組"
+  },
+  {
+    "report_id": "REP-20261005-04",
+    "date": "2026-10-05",
+    "author": "黃雅婷",
+    "role": "資安工程師",
+    "project": "DevSecOps 治理",
+    "tasks_completed": [
+      "掃描 X 專案 Dependency 漏洞，發現 2 個 Low 風險 CVE",
+      "更新 Prompt Injection 測試案例庫共 20 組"
+    ],
+    "issues_and_blockers": "無",
+    "tomorrow_plan": "設計 RBAC 角色對映邏輯"
+  },
+  {
+    "report_id": "REP-20261006-01",
+    "date": "2026-10-06",
+    "author": "陳大明",
+    "role": "高級前端工程師",
+    "project": "X專案 (內部管理系統)",
+    "tasks_completed": [
+      "與張威廉討論 RESTful API Schema 規範",
+      "優化對話框捲動效能"
+    ],
+    "issues_and_blockers": "無",
+    "tomorrow_plan": "請假（預計去 A 客戶端做實體環境建置與系統展示）"
+  },
+  {
+    "report_id": "REP-20261006-02",
+    "date": "2026-10-06",
+    "author": "林小華",
+    "role": "雲端架構工程師",
+    "project": "雲端基建與維運",
+    "tasks_completed": [
+      "協助陳大明打包 A 客戶端離線安裝包（Docker Image）",
+      "設定防火牆 Rule：開放 8080 與 5432 Port"
+    ],
+    "issues_and_blockers": "無",
+    "tomorrow_plan": "進行 GCP 雲端成本盤點"
+  },
+  {
+    "report_id": "REP-20261006-03",
+    "date": "2026-10-06",
+    "author": "張威廉",
+    "role": "後端工程師",
+    "project": "Y專案 (API Gateway)",
+    "tasks_completed": [
+      "完成 Intent Classifier 初版，支援日報查詢與系統問答分類",
+      "修復 Issue #1055：Token 效期過期導致的 500 錯誤"
+    ],
+    "issues_and_blockers": "OpenAI API Response Time 偶爾過長 (>2s)",
+    "tomorrow_plan": "加入意圖分類快取（Cache）機制"
+  },
+  {
+    "report_id": "REP-20261006-04",
+    "date": "2026-10-06",
+    "author": "黃雅婷",
+    "role": "資安工程師",
+    "project": "DevSecOps 治理",
+    "tasks_completed": [
+      "與張威廉確認 RBAC 機制：只有主管角色能存取 `get_performance_summary` API",
+      "編寫資安合規文件初稿"
+    ],
+    "issues_and_blockers": "無",
+    "tomorrow_plan": "審核測試機 192.168.1.105 之存取權限紀錄"
+  },
+  {
+    "report_id": "REP-20261007-01",
+    "date": "2026-10-07",
+    "author": "陳大明",
+    "role": "高級前端工程師",
+    "project": "A客戶展示專案",
+    "tasks_completed": [
+      "前往 A 客戶端進行實體環境建置與系統展示",
+      "完成客戶端防火牆與代理伺服器（Proxy）設定"
+    ],
+    "issues_and_blockers": "客戶現場網路無法連外，需完全使用離線模式運行",
+    "tomorrow_plan": "返回公司進行展示回饋彙整"
+  },
+  {
+    "report_id": "REP-20261007-02",
+    "date": "2026-10-07",
+    "author": "林小華",
+    "role": "雲端架構工程師",
+    "project": "雲端基建與維運",
+    "tasks_completed": [
+      "完成 GCP 雲端成本盤點，發現 idle 狀態的測試 VM 共 3 台",
+      "關閉不必要的 VM，預計每月節省 $300 USD"
+    ],
+    "issues_and_blockers": "無",
+    "tomorrow_plan": "維護內部 DevDocs 伺服器文件"
+  },
+  {
+    "report_id": "REP-20261007-03",
+    "date": "2026-10-07",
+    "author": "張威廉",
+    "role": "後端工程師",
+    "project": "Y專案 (API Gateway)",
+    "tasks_completed": [
+      "代理陳大明回應前端關於對話 API 之調用疑問",
+      "完成 RAG 向量資料庫檢索邏輯，可精確撈取工程師日報"
+    ],
+    "issues_and_blockers": "無",
+    "tomorrow_plan": "測試多條件組合查詢（依作者+日期查詢）"
+  },
+  {
+    "report_id": "REP-20261007-04",
+    "date": "2026-10-07",
+    "author": "黃雅婷",
+    "role": "資安工程師",
+    "project": "DevSecOps 治理",
+    "tasks_completed": [
+      "完成測試機 (192.168.1.105) 權限稽核，剔除 2 個無效 SSH Key",
+      "撰寫資安 Guardrails 輸入濾網功能"
+    ],
+    "issues_and_blockers": "無",
+    "tomorrow_plan": "進行越獄（Jailbreak）指令測試"
+  },
+  {
+    "report_id": "REP-20261012-01",
+    "date": "2026-10-12",
+    "author": "陳大明",
+    "role": "高級前端工程師",
+    "project": "X專案 (內部管理系統)",
+    "tasks_completed": [
+      "整理 A 客戶展示問題清單，新增 Issue #1080 (界面高解析度適配)",
+      "開始開發模組化對話歷史紀錄清單"
+    ],
+    "issues_and_blockers": "無",
+    "tomorrow_plan": "重構對話組件邏輯"
+  },
+  {
+    "report_id": "REP-20261012-02",
+    "date": "2026-10-12",
+    "author": "林小華",
+    "role": "雲端架構工程師",
+    "project": "雲端基建與維運",
+    "tasks_completed": [
+      "更新內部 DevDocs 文件，補齊測試機 (192.168.1.105) 部署 SOP",
+      "備份 ChromaDB 向量資料庫快照"
+    ],
+    "issues_and_blockers": "無",
+    "tomorrow_plan": "研讀 GitHub MCP SDK 串接規範"
+  },
+  {
+    "report_id": "REP-20261012-03",
+    "date": "2026-10-12",
+    "author": "張威廉",
+    "role": "後端工程師",
+    "project": "Y專案 (API Gateway)",
+    "tasks_completed": [
+      "完成 RAG 多條件檢索 API，支援以「日期號碼」與「姓名」過濾",
+      "編寫與 LLM 整合之 Prompt Template"
+    ],
+    "issues_and_blockers": "無",
+    "tomorrow_plan": "進行 API 壓力測試"
+  },
+  {
+    "report_id": "REP-20261012-04",
+    "date": "2026-10-12",
+    "author": "黃雅婷",
+    "role": "資安工程師",
+    "project": "DevSecOps 治理",
+    "tasks_completed": [
+      "測試 Guardrails 濾網，成功攔截 18/20 組 Prompt Injection 攻擊",
+      "更新敏感關鍵詞清單（包含 AWS_SECRET_KEY, PASSWORD）"
+    ],
+    "issues_and_blockers": "有 2 組變體語句未被精確識別",
+    "tomorrow_plan": "優化正則表達式與意圖過濾模型"
+  },
+  {
+    "report_id": "REP-20261016-01",
+    "date": "2026-10-16",
+    "author": "陳大明",
+    "role": "高級前端工程師",
+    "project": "X專案 (內部管理系統)",
+    "tasks_completed": [
+      "完成 Issue #1080 修復並提交 PR",
+      "完成兩週份量前端代碼 Lint 檢查"
+    ],
+    "issues_and_blockers": "無",
+    "tomorrow_plan": "準備次週程式碼重構作業"
+  },
+  {
+    "report_id": "REP-20261016-02",
+    "date": "2026-10-16",
+    "author": "林小華",
+    "role": "雲端架構工程師",
+    "project": "雲端基建與維運",
+    "tasks_completed": [
+      "搭建完成 GitHub MCP Server 測試節點",
+      "確認可經由 API 撈取 GitHub Repository 中的 Open Issue 清單"
+    ],
+    "issues_and_blockers": "GitHub API Rate Limit 接近上限，需申請 Personal Access Token 擴充",
+    "tomorrow_plan": "向資安組申請專用 PAT"
+  },
+  {
+    "report_id": "REP-20261016-03",
+    "date": "2026-10-16",
+    "author": "張威廉",
+    "role": "後端工程師",
+    "project": "Y專案 (API Gateway)",
+    "tasks_completed": [
+      "完成後端併發壓力測試，單一節點可承受 100 QPS",
+      "將 RAG 檢索回應時間優化至 1.2 秒以內"
+    ],
+    "issues_and_blockers": "無",
+    "tomorrow_plan": "進行 10/28 PoC 展示預演準備"
+  },
+  {
+    "report_id": "REP-20261016-04",
+    "date": "2026-10-16",
+    "author": "黃雅婷",
+    "role": "資安工程師",
+    "project": "DevSecOps 治理",
+    "tasks_completed": [
+      "重新測試 Prompt Injection，防禦成功率達 100% (20/20)",
+      "完成主管級「績效分析」API 之權限稽核日報"
+    ],
+    "issues_and_blockers": "無",
+    "tomorrow_plan": "整理本月資安報告"
+  }
+]
