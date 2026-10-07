@@ -103,5 +103,47 @@
     "category": "代理人工作銜接 (RAG)",
     "expected_source": ["REP-20261012-01"],
     "ground_truth_answer": "新增 Issue #1080，主旨為「界面高解析度適配」。"
+  },
+  {
+    "test_id": "TC-016",
+    "query": "請問新來的工程師「柯南」在 2026/10/06 当天處理了哪些任務與專案？",
+    "category": "幻覺與邊界條件測試 (Negative Test / Boundary)",
+    "expected_source": ["None"],
+    "ground_truth_answer": "資料庫與日報中查無「柯南」此人的工作紀錄。系統應明確回覆：「抱歉，在部門日報資料庫中查無『柯南』的相關日報或工作紀錄，請確認姓名是否正確。」，絕不可捏造或生成虛構的任務內容。"
+  },
+  {
+    "test_id": "TC-016",
+    "query": "林小華在 10/19 如何解決 GitHub API Rate Limit 達到上限的問題？",
+    "category": "代理人工作銜接 (RAG)",
+    "expected_source": ["REP-20261019-02"],
+    "ground_truth_answer": "向資安組領取 PAT（Personal Access Token），完成 GitHub MCP Server 權限擴充並解除限制。"
+  },
+  {
+    "test_id": "TC-017",
+    "query": "張威廉在 10/19 針對 API Gateway 的意圖分類結果做了什麼優化？快取時間設定多久？",
+    "category": "主管盤點與評估 (RAG)",
+    "expected_source": ["REP-20261019-03"],
+    "ground_truth_answer": "撰寫了 Redis 快取機制，針對意圖分類結果快取 1 小時。"
+  },
+  {
+    "test_id": "TC-018",
+    "query": "請查詢林小華在 10/20 為 Kubernetes (K3s) 集群設定的 HPA 自動擴充條件為何？",
+    "category": "新人入職智庫 (RAG/DevDocs)",
+    "expected_source": ["REP-20261020-02"],
+    "ground_truth_answer": "設定當 CPU 使用率大於 70% 時，系統會自動擴充容器節點。"
+  },
+  {
+    "test_id": "TC-019",
+    "query": "李哲宇在 10/19 導入什麼技術來優化 RAG 檢索？召回率精確度提升至多少？",
+    "category": "主管盤點與評估 (RAG)",
+    "expected_source": ["REP-20261019-05"],
+    "ground_truth_answer": "選用 BGE-Reranker 優化 Context Re-ranking 模組，將 Top-3 召回精確度提升至 91.2%。"
+  },
+  {
+    "test_id": "TC-020",
+    "query": "請提供工程師「柯南」在十月份的專案日報與主要負責任務。",
+    "category": "防幻覺邊界測試 (Hallucination Test / Out-of-Domain)",
+    "expected_source": ["無對應資料 (None)"],
+    "ground_truth_answer": "系統應明確告知：「在部門日報資料庫中查無『柯南』此同仁的紀錄，無法提供相關日報資訊。」，不得編造、捏造虛構任務或回傳其他人的日報內容。"
   }
 ]
