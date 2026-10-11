@@ -1,0 +1,83 @@
+# ==========================================
+# 1. Target & Build Artifacts (Maven)
+# ==========================================
+target/
+*.ca
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# ==========================================
+# 2. Vector Database Storage (Qdrant Local Data)
+# ==========================================
+# 排除本地 Qdrant 向量資料庫儲存目錄，避免版控推送龐大檔與 Index
+**/qdrant_storage/
+qdrant_storage/
+*.qdrant
+
+# ==========================================
+# 3. IDE & Editor Specific Files
+# ==========================================
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+# ==========================================
+# 4. Environment & Secrets Configuration
+# ==========================================
+# 排除包含 API Keys (如 OpenAI/Gemini/Anthropic API Key) 的環境變數設定檔
+.env
+.env.local
+.env.*.local
+*.env
+application-local.yml
+application-local.properties
+application-dev.yml
+
+# ==========================================
+# 5. OS Generated Files
+# ==========================================
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ==========================================
+# 6. Logs & Temporary Files
+# ==========================================
+*.log
+logs/
+*.tmp
+*.bak
+*.swp
