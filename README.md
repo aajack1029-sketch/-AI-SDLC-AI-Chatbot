@@ -17,7 +17,7 @@
 步驟1:啟動 Qdrant 向量資料庫 (Docker)
 開啟終端機執行以下指令啟動 Qdrant 容器：
 ```powershell
-docker run -d --name qdrant-dev-v1-18 -p 6333:6333 -p 6334:6334 qdrant/qdrant:v1.9.0
+docker run -d --name qdrant-dev-v1-18 -p 6333:6333 -p 6334:6334 qdrant/qdrant:v1.18.0
 
 步驟 2：設定環境變數並啟動 Spring Boot 後端
 在專案根目錄開啟 PowerShell 視窗，設定 API Key 並啟動服務：
