@@ -1,0 +1,27 @@
+{
+  "properties": [
+    {
+      "name": "app.embedding.api-key",
+      "type": "java.lang.String",
+      "description": "API key for the Gemini Developer API embedding endpoint."
+    },
+    {
+      "name": "app.embedding.model",
+      "type": "java.lang.String",
+      "description": "Gemini Developer API model used to create embeddings.",
+      "defaultValue": "gemini-embedding-001"
+    },
+    {
+      "name": "app.ingestion.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether daily reports are embedded and upserted into Qdrant at startup.",
+      "defaultValue": true
+    },
+    {
+      "name": "app.ingestion.limit",
+      "type": "java.lang.Integer",
+      "description": "Maximum number of daily reports to embed at startup; zero imports all reports.",
+      "defaultValue": 0
+    }
+  ]
+}

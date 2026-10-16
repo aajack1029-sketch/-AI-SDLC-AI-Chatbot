@@ -1,0 +1,20 @@
+﻿target/
+.env
+.evn
+*.env
+*.log
+qdrant_storage/
+.vscode/
+.idea/
+# Java / Maven 暫存
+target/
+*.class
+
+# 敏感設定與環境變數檔案
+.env
+*.local
+application.properties
+
+# VS Code 與系統快取
+.vscode/
+.DS_Store
