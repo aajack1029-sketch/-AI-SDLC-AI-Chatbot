@@ -7,12 +7,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/chat")
-@RequiredArgsConstructor
 @CrossOrigin(origins = "*") // 允許跨域請求
 public class ChatController {
 
     private final ChatAssistantService chatAssistantService;
-
+    public ChatController(ChatAssistantService chatAssistantService) {
+        this.chatAssistantService = chatAssistantService;
+    }
     @PostMapping(value = "/query", produces = "application/json;charset=UTF-8")
     public ResponseEntity<ChatResponse> query(@RequestBody ChatRequest request) {
         if (request == null || !StringUtils.hasText(request.message())) {
