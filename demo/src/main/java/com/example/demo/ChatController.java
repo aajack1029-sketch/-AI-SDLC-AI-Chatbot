@@ -31,19 +31,28 @@ public class ChatController {
         ChatAssistantService.ChatResult result = request.filters() == null
                 ? chatAssistantService.respond(request.message(), role)
                 : chatAssistantService.respond(request.message(), role, request.filters());
-        return ResponseEntity.ok(new ChatResponse(result.answer(), result.intent(), result.intents()));
+        return ResponseEntity.ok(new ChatResponse(
+                result.answer(), result.intent(), result.intents(), result.references()));
     }
 
     // 使用 Java Record 作為 DTO (不可變、自動產生 Getter/Constructor/Equals/ToString)
     public record ChatRequest(String message, String role, GitHubEventFilters filters) {}
 
-    public record ChatResponse(String answer, IntentCategory intent, List<IntentCategory> intents) {
+    public record ChatResponse(
+            String answer,
+            IntentCategory intent,
+            List<IntentCategory> intents,
+            List<ChatAssistantService.ChatSource> references) {
         public ChatResponse(String answer) {
-            this(answer, null, List.of());
+            this(answer, null, List.of(), List.of());
         }
 
         public ChatResponse(String answer, IntentCategory intent) {
-            this(answer, intent, intent == null ? List.of() : List.of(intent));
+            this(answer, intent, intent == null ? List.of() : List.of(intent), List.of());
+        }
+
+        public ChatResponse(String answer, IntentCategory intent, List<IntentCategory> intents) {
+            this(answer, intent, intents, List.of());
         }
     }
 }

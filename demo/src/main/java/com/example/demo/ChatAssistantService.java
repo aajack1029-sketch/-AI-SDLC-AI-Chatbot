@@ -10,7 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -68,8 +71,8 @@ public class ChatAssistantService {
                 .similarityThreshold(0.2)
                 .build();
 
-        String context = buildContext(intents, searchRequest);
-        if (context.isBlank()) {
+        ContextResult context = buildContext(intents, searchRequest);
+        if (context.text().isBlank()) {
             String noResults = intents.contains(IntentCategory.ENVIRONMENT_DOC)
                     ? "在權威知識文件中未找到與您的問題相關的紀錄。"
                     : intents.contains(IntentCategory.GITHUB_SDLC)
@@ -86,7 +89,8 @@ public class ChatAssistantService {
                 日報用於回答同仁做過什麼或日報曾如何記載；GitHub SDLC 事件用於回答實際提交、Pull Request、
                 Issue 與討論內容。若權威文件沒有相關資訊，明確說明無法由權威文件確認，不可從其他來源推定現行設定。
                 """;
-        return new ChatResult(intents, generateAnswer(userQuery, userRole, instructions, context));
+        return new ChatResult(intents,
+                generateAnswer(userQuery, userRole, instructions, context.text()), context.sources());
     }
 
     private ChatResult respondToFilteredGitHubEvents(
@@ -94,7 +98,8 @@ public class ChatAssistantService {
         List<IntentCategory> intents = List.of(IntentCategory.GITHUB_SDLC);
         SearchRequest searchRequest = buildGitHubSearchRequest(userQuery, filters);
         StringBuilder context = new StringBuilder();
-        appendDocuments(context, "GitHub SDLC 事件",
+        List<ChatSource> sources = new ArrayList<>();
+        appendDocuments(context, sources, "GitHub SDLC 事件",
                 githubEventsVectorStore.similaritySearch(searchRequest));
         if (context.isEmpty()) {
             return new ChatResult(intents, "GitHub SDLC 事件中沒有符合所提供篩選條件的資料。");
@@ -105,25 +110,28 @@ public class ChatAssistantService {
                 不可引用其他資料來源或推測事件內容。若 Context 提供來源 URL，請用 Markdown 連結引用相關事件。
                 """;
         return new ChatResult(intents,
-                generateAnswer(userQuery, userRole, instructions, context.toString()));
+                generateAnswer(userQuery, userRole, instructions, context.toString()), sources);
     }
 
-    private String buildContext(
+    private ContextResult buildContext(
             List<IntentCategory> intents,
             SearchRequest searchRequest) {
         StringBuilder context = new StringBuilder();
+        List<ChatSource> sources = new ArrayList<>();
         boolean githubQuestion = intents.contains(IntentCategory.GITHUB_SDLC);
         if (githubQuestion || intents.contains(IntentCategory.ENVIRONMENT_DOC)) {
-            appendDocuments(context, "權威知識庫文件", knowledgeDocsVectorStore.similaritySearch(searchRequest));
+            appendDocuments(context, sources, "權威知識庫文件",
+                    knowledgeDocsVectorStore.similaritySearch(searchRequest));
         }
         if (githubQuestion || intents.contains(IntentCategory.DAILY_STATUS)) {
-            appendDocuments(context, "同仁日報", dailyReportsVectorStore.similaritySearch(searchRequest));
+            appendDocuments(context, sources, "同仁日報",
+                    dailyReportsVectorStore.similaritySearch(searchRequest));
         }
         if (githubQuestion) {
-            appendDocuments(context, "GitHub SDLC 事件",
+            appendDocuments(context, sources, "GitHub SDLC 事件",
                     githubEventsVectorStore.similaritySearch(searchRequest));
         }
-        return context.toString();
+        return new ContextResult(context.toString(), List.copyOf(new LinkedHashSet<>(sources)));
     }
 
     private SearchRequest buildGitHubSearchRequest(String query, GitHubEventFilters filters) {
@@ -167,7 +175,11 @@ public class ChatAssistantService {
         }
     }
 
-    private void appendDocuments(StringBuilder context, String sourceLabel, List<Document> documents) {
+    private void appendDocuments(
+            StringBuilder context,
+            List<ChatSource> sources,
+            String sourceLabel,
+            List<Document> documents) {
         if (documents == null || documents.isEmpty()) {
             return;
         }
@@ -182,7 +194,58 @@ public class ChatAssistantService {
                 context.append("\n---\n");
             }
             context.append("【").append(sourceLabel).append("】\n").append(sourceContext);
+            documents.stream()
+                    .filter(Objects::nonNull)
+                    .filter(document -> StringUtils.hasText(document.getText()))
+                    .map(document -> toChatSource(sourceLabel, document.getMetadata()))
+                    .forEach(sources::add);
         }
+    }
+
+    private ChatSource toChatSource(String label, Map<String, Object> metadata) {
+        String reference = switch (label) {
+            case "權威知識庫文件" -> firstMetadataValue(metadata, "title", "document_id");
+            case "同仁日報" -> firstMetadataValue(metadata, "report_id", "date");
+            default -> {
+                String eventType = firstMetadataValue(metadata, "event_type");
+                String eventId = firstMetadataValue(metadata, "number", "external_id");
+                yield StringUtils.hasText(eventType) && StringUtils.hasText(eventId)
+                        ? eventType + " #" + eventId
+                        : firstMetadataValue(metadata, "external_id");
+            }
+        };
+        String url = firstMetadataUrl(metadata, "reference_urls", "source_url");
+        return new ChatSource(label, StringUtils.hasText(reference) ? reference : "檢索文件", url);
+    }
+
+    private String firstMetadataValue(Map<String, Object> metadata, String... keys) {
+        for (String key : keys) {
+            Object value = metadata.get(key);
+            if (value != null && StringUtils.hasText(value.toString())) {
+                return value.toString();
+            }
+        }
+        return "";
+    }
+
+    private String firstMetadataUrl(Map<String, Object> metadata, String... keys) {
+        for (String key : keys) {
+            Object value = metadata.get(key);
+            if (value instanceof Collection<?> values) {
+                for (Object candidate : values) {
+                    if (candidate != null && isHttpUrl(candidate.toString())) {
+                        return candidate.toString();
+                    }
+                }
+            } else if (value != null && isHttpUrl(value.toString())) {
+                return value.toString();
+            }
+        }
+        return null;
+    }
+
+    private boolean isHttpUrl(String value) {
+        return value.startsWith("https://") || value.startsWith("http://");
     }
 
     private String generateAnswer(String userQuery, String userRole, String instructions, String context) {
@@ -209,13 +272,22 @@ public class ChatAssistantService {
                 .content();
     }
 
-    public record ChatResult(List<IntentCategory> intents, String answer) {
+    private record ContextResult(String text, List<ChatSource> sources) {}
+
+    public record ChatSource(String label, String reference, String url) {}
+
+    public record ChatResult(List<IntentCategory> intents, String answer, List<ChatSource> references) {
         public ChatResult {
             intents = List.copyOf(intents);
+            references = references == null ? List.of() : List.copyOf(references);
+        }
+
+        public ChatResult(List<IntentCategory> intents, String answer) {
+            this(intents, answer, List.of());
         }
 
         public ChatResult(IntentCategory intent, String answer) {
-            this(List.of(intent), answer);
+            this(List.of(intent), answer, List.of());
         }
 
         public IntentCategory intent() {

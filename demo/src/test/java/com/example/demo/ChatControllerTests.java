@@ -92,6 +92,27 @@ class ChatControllerTests {
     }
 
     @Test
+    void returnsSourceReferencesAlongsideTheAnswer() throws Exception {
+        ChatAssistantService assistantService = mock(ChatAssistantService.class);
+        when(assistantService.respond("Issue 內容", "DEVELOPER"))
+                .thenReturn(new ChatAssistantService.ChatResult(
+                        List.of(IntentCategory.GITHUB_SDLC),
+                        "回答",
+                        List.of(new ChatAssistantService.ChatSource(
+                                "GitHub SDLC 事件", "issue #12",
+                                "https://github.com/example/repo/issues/12"))));
+
+        createMockMvc(assistantService).perform(post("/api/v1/chat/query")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"message\":\"Issue 內容\",\"role\":\"DEVELOPER\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.references[0].label").value("GitHub SDLC 事件"))
+                .andExpect(jsonPath("$.references[0].reference").value("issue #12"))
+                .andExpect(jsonPath("$.references[0].url")
+                        .value("https://github.com/example/repo/issues/12"));
+    }
+
+    @Test
     void forwardsGitHubMetadataFilters() throws Exception {
         ChatAssistantService assistantService = mock(ChatAssistantService.class);
         GitHubEventFilters filters = new GitHubEventFilters(

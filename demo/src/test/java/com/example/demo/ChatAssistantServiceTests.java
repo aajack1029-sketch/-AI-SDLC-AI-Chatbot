@@ -7,6 +7,7 @@ import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
@@ -171,6 +172,31 @@ class ChatAssistantServiceTests {
         assertThat(result.intent()).isEqualTo(IntentCategory.GITHUB_SDLC);
         verify(githubEvents).similaritySearch(any(SearchRequest.class));
         verifyNoInteractions(knowledgeDocs, dailyReports);
+    }
+
+    @Test
+    void returnsRetrievedGitHubSourceMetadataWithTheAnswer() {
+        VectorStore knowledgeDocs = mock(VectorStore.class);
+        VectorStore dailyReports = mock(VectorStore.class);
+        VectorStore githubEvents = mock(VectorStore.class);
+        when(githubEvents.similaritySearch(any(SearchRequest.class)))
+                .thenReturn(List.of(new Document("event-id", "Issue #12: 測試問題",
+                        Map.of("event_type", "issue", "number", 12,
+                                "reference_urls", List.of("https://github.com/example/repo/issues/12")))));
+        ChatClient chatClient = mock(ChatClient.class, RETURNS_DEEP_STUBS);
+        ChatClient.Builder chatClientBuilder = mock(ChatClient.Builder.class);
+        when(chatClientBuilder.build()).thenReturn(chatClient);
+        IntentClassifier intentClassifier = mock(IntentClassifier.class);
+        when(intentClassifier.classify(any())).thenReturn(List.of(IntentCategory.GITHUB_SDLC));
+        ChatAssistantService service = new ChatAssistantService(
+                chatClientBuilder, intentClassifier, knowledgeDocs, dailyReports, githubEvents);
+
+        ChatAssistantService.ChatResult result = service.respond(
+                "測試 Issue 的內容", "DEVELOPER",
+                new GitHubEventFilters("issue", null, null, null, null, null, null, null));
+
+        assertThat(result.references()).containsExactly(new ChatAssistantService.ChatSource(
+                "GitHub SDLC 事件", "issue #12", "https://github.com/example/repo/issues/12"));
     }
 
     private static ChatAssistantService createService(

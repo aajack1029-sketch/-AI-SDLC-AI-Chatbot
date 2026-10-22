@@ -93,7 +93,7 @@ curl -X POST http://localhost:8080/api/v1/chat/query \
   -d '{"message":"測試機的 IP 是多少？","role":"DEVELOPER"}'
 ```
 
-成功時會取得包含 `answer`、`intent`、`intents` 欄位的 JSON 回應。`http://localhost:8080/` 並非前端頁面或聊天端點；請從 Vite 網址開啟 UI，並以 `POST /api/v1/chat/query` 呼叫聊天 API。
+成功時會取得包含 `answer`、`intent`、`intents` 與 `references` 欄位的 JSON 回應。`references` 會列出檢索來源的標籤、文件識別資訊，以及可用的來源 URL。`http://localhost:8080/` 並非前端頁面或聊天端點；請從 Vite 網址開啟 UI，並以 `POST /api/v1/chat/query` 呼叫聊天 API。
 
 常見連線問題：
 - 瀏覽器無法開啟前端：確認 `npm run dev` 正在執行，使用終端機顯示的網址，並確認 VS Code 已轉發 5173 埠。

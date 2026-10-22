@@ -65,7 +65,7 @@ npm run dev
 
 開啟 Vite 顯示的網址，預設為 <http://localhost:5173/>。`dev` 指令會使用 `--host 0.0.0.0`，以支援容器或遠端開發環境的連接埠轉發；在 VS Code Dev Containers 中，若本機瀏覽器無法連線，請確認 Ports 面板已轉發 `5173`。
 
-聊天介面會將問題以 `POST` 傳送至 `http://localhost:8080/api/v1/chat/query`。目前前端不會附帶 GitHub `filters`，因此使用一般的多來源檢索流程。
+聊天介面會將問題以 `POST` 傳送至 `http://localhost:8080/api/v1/chat/query`。介面可切換 `DEVELOPER`、`DEVOPS` 與 `MANAGER` 角色，也提供環境文件、工作日報及 GitHub Issue 的快速情境；GitHub 情境會附帶 `filters`，其他情境依問題意圖檢索。
 
 ### 3. 確認 API
 
@@ -77,7 +77,7 @@ curl -X POST http://localhost:8080/api/v1/chat/query \
   -d '{"message":"測試機 IP 是多少？","role":"DEVELOPER"}'
 ```
 
-成功時會回傳 `answer`、主要意圖 `intent` 與完整意圖清單 `intents`。不要以瀏覽器直接開啟 `/api/v1/chat/query` 測試，因為瀏覽器網址列會送出 `GET`；也不要期待後端根網址 `http://localhost:8080/` 顯示 React 頁面，前端和後端是分開啟動的服務。
+成功時會回傳 `answer`、主要意圖 `intent`、完整意圖清單 `intents` 與檢索來源 `references`（來源標籤、文件識別資訊，以及可用的 URL）。不要以瀏覽器直接開啟 `/api/v1/chat/query` 測試，因為瀏覽器網址列會送出 `GET`；也不要期待後端根網址 `http://localhost:8080/` 顯示 React 頁面，前端和後端是分開啟動的服務。
 
 後端目前只允許 `http://localhost:5173` 跨來源存取。若前端改用其他 origin（包含不同 port），請同步更新 `ChatController` 的 `@CrossOrigin` 設定。
 
