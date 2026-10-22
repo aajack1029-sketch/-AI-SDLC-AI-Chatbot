@@ -1,0 +1,72 @@
+[
+  {
+    "test_id": "INT-001",
+    "query": "專案測試機目前的 IP 地址是多少？",
+    "expected_intent": "ENVIRONMENT_DOC"
+  },
+  {
+    "test_id": "INT-002",
+    "query": "測試機的部署 SOP 要去哪裡查？",
+    "expected_intent": "ENVIRONMENT_DOC"
+  },
+  {
+    "test_id": "INT-003",
+    "query": "目前測試環境使用什麼 IP 配置？",
+    "expected_intent": "ENVIRONMENT_DOC"
+  },
+  {
+    "test_id": "INT-004",
+    "query": "陳大明昨天完成了哪些工作？",
+    "expected_intent": "DAILY_STATUS"
+  },
+  {
+    "test_id": "INT-005",
+    "query": "目前 X 專案的進度和主要 blocker 是什麼？",
+    "expected_intent": "DAILY_STATUS"
+  },
+  {
+    "test_id": "INT-006",
+    "query": "林小華在 10/16 遇到什麼技術問題？",
+    "expected_intent": "DAILY_STATUS"
+  },
+  {
+    "test_id": "INT-007",
+    "query": "請整理本週團隊的工作日報摘要。",
+    "expected_intent": "DAILY_STATUS"
+  },
+  {
+    "test_id": "INT-008",
+    "query": "你好，請簡單介紹你自己。",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "test_id": "INT-009",
+    "query": "謝謝你，今天辛苦了！",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "test_id": "INT-010",
+    "query": "用簡單的方式解釋什麼是向量資料庫。",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "test_id": "INT-011",
+    "query": "你可以給我一個安排今日工作的建議嗎？",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "test_id": "INT-012",
+    "query": "你知道怎麼提升開會效率嗎？",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "test_id": "INT-013",
+    "query": "X 專案測試機目前有效的 IP 是多少？同仁日報中有提到測試機 IP 嗎？",
+    "expected_intent": ["ENVIRONMENT_DOC", "DAILY_STATUS"]
+  },
+  {
+    "test_id": "INT-014",
+    "query": "昨天小明提交了什麼程式碼修復？",
+    "expected_intent": "GITHUB_SDLC"
+  }
+]
