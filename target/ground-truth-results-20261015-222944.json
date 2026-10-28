@@ -1,0 +1,25 @@
+﻿{
+    "generated_at":  "2026-10-15T22:29:51.1056255+08:00",
+    "base_url":  "http://localhost:8080",
+    "total_cases":  1,
+    "completed_responses":  1,
+    "unsupported_cases":  0,
+    "failed_cases":  0,
+    "not_run_after_provider_error":  0,
+    "results":  [
+                    {
+                        "test_id":  "TC-001",
+                        "category":  "代理人工作銜接 (RAG)",
+                        "query":  "請問陳大明在 2026/10/06 當天的預計規劃與隔天行程是什麼？",
+                        "expected_source":  [
+                                                "REP-20261006-01"
+                                            ],
+                        "ground_truth_answer":  "陳大明預計隔天（10/07）請假，並前往 A 客戶端進行實體環境建置與系統展示。",
+                        "actual_answer":  "依據 2026-10-06 的日報紀錄，陳大明的明日計畫（隔天預計行程）如下：\n\n* **明日計畫**：請假（預計去 A 客戶端做實體環境建置與系統展示）",
+                        "result":  "manual_review",
+                        "http_status":  200,
+                        "duration_ms":  6766,
+                        "error":  null
+                    }
+                ]
+}
