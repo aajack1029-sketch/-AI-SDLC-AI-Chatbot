@@ -77,7 +77,7 @@ curl -X POST http://localhost:8080/api/v1/chat/query \
   -d '{"message":"測試機 IP 是多少？","role":"DEVELOPER"}'
 ```
 
-成功時會回傳 `answer`、主要意圖 `intent`、完整意圖清單 `intents` 與檢索來源 `references`（來源標籤、文件識別資訊，以及可用的 URL）。不要以瀏覽器直接開啟 `/api/v1/chat/query` 測試，因為瀏覽器網址列會送出 `GET`；也不要期待後端根網址 `http://localhost:8080/` 顯示 React 頁面，前端和後端是分開啟動的服務。
+成功時會回傳 `answer`、主要意圖 `intent`、完整意圖清單 `intents` 與檢索來源 `references`（來源標籤、實際文件標題與編號、日報編號，以及可用的 URL）。回答內部資料時也會列出 Context 中支持答案的來源識別碼，例如權威文件 `DOC-ENV-TEST-SERVER-001` 或日報 `REP-20261006-01`；聊天訊息下方會顯示對應來源。不要以瀏覽器直接開啟 `/api/v1/chat/query` 測試，因為瀏覽器網址列會送出 `GET`；也不要期待後端根網址 `http://localhost:8080/` 顯示 React 頁面，前端和後端是分開啟動的服務。
 
 後端目前只允許 `http://localhost:5173` 跨來源存取。若前端改用其他 origin（包含不同 port），請同步更新 `ChatController` 的 `@CrossOrigin` 設定。
 

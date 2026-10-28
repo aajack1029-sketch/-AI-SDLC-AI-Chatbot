@@ -204,7 +204,13 @@ public class ChatAssistantService {
 
     private ChatSource toChatSource(String label, Map<String, Object> metadata) {
         String reference = switch (label) {
-            case "權威知識庫文件" -> firstMetadataValue(metadata, "title", "document_id");
+            case "權威知識庫文件" -> {
+                String title = firstMetadataValue(metadata, "title");
+                String documentId = firstMetadataValue(metadata, "document_id");
+                yield StringUtils.hasText(title) && StringUtils.hasText(documentId)
+                        ? title + " (" + documentId + ")"
+                        : StringUtils.hasText(title) ? title : documentId;
+            }
             case "同仁日報" -> firstMetadataValue(metadata, "report_id", "date");
             default -> {
                 String eventType = firstMetadataValue(metadata, "event_type");
@@ -260,6 +266,8 @@ public class ChatAssistantService {
                 4. 若 Context 無法回答，請明確告知資料庫或 GitHub 紀錄中查無相關資訊。
                 5. 輸出風格需簡明、專業。
                 6. 回答 GitHub 事件時，若 Context 提供來源 URL，請用 Markdown 連結引用相關 Commit、PR、Issue 或留言。
+                7. 回答內部事實時，請在文末列出 Context 中實際提供且支持答案的來源名稱與識別碼
+                   （例如文件編號或日報編號）；不可捏造識別碼，也不可只籠統寫「文件」或「日報」。
 
                 【Context】：
                 %s

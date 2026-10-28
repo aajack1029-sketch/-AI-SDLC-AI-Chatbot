@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import axios from 'axios'
 
 type Role = 'DEVELOPER' | 'DEVOPS' | 'MANAGER'
@@ -41,6 +41,8 @@ function App() {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
   const [currentRole, setCurrentRole] = useState<Role>('DEVELOPER')
+  const isComposing = useRef(false)
+  const compositionEndedAt = useRef(0)
 
   const quickScenarios: QuickScenario[] = [
     {
@@ -137,12 +139,17 @@ function App() {
   }
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) {
+    if (
+      isComposing.current ||
+      event.nativeEvent.isComposing ||
+      event.nativeEvent.keyCode === 229
+    ) {
       return
     }
 
     if (event.key === 'Enter') {
       event.preventDefault()
+      if (Date.now() - compositionEndedAt.current < 100) return
       void handleSend()
     }
   }
@@ -327,6 +334,14 @@ function App() {
           type="text"
           value={input}
           onChange={(event) => setInput(event.target.value)}
+          onCompositionStart={() => {
+            isComposing.current = true
+            compositionEndedAt.current = 0
+          }}
+          onCompositionEnd={() => {
+            isComposing.current = false
+            compositionEndedAt.current = Date.now()
+          }}
           onKeyDown={handleKeyDown}
           placeholder="請輸入問題（例如：測試機 IP 是多少？今日部署進度？）"
           style={{

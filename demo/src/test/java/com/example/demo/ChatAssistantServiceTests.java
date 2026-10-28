@@ -199,6 +199,40 @@ class ChatAssistantServiceTests {
                 "GitHub SDLC 事件", "issue #12", "https://github.com/example/repo/issues/12"));
     }
 
+    @Test
+    void returnsDocumentAndDailyReportIdsAsAnswerSources() {
+        VectorStore knowledgeDocs = mock(VectorStore.class);
+        VectorStore dailyReports = mock(VectorStore.class);
+        VectorStore githubEvents = mock(VectorStore.class);
+        when(knowledgeDocs.similaritySearch(any(SearchRequest.class)))
+                .thenReturn(List.of(new Document("doc-id", "權威文件內容",
+                        Map.of("document_id", "DOC-ENV-TEST-SERVER-001",
+                                "title", "X 專案測試機環境配置與部署 SOP"))));
+        when(dailyReports.similaritySearch(any(SearchRequest.class)))
+                .thenReturn(List.of(new Document("report-id", "日報內容",
+                        Map.of("report_id", "REP-20261006-01"))));
+        ChatClient chatClient = mock(ChatClient.class, RETURNS_DEEP_STUBS);
+        ChatClient.Builder chatClientBuilder = mock(ChatClient.Builder.class);
+        when(chatClientBuilder.build()).thenReturn(chatClient);
+        IntentClassifier intentClassifier = mock(IntentClassifier.class);
+        when(intentClassifier.classify(any()))
+                .thenReturn(List.of(IntentCategory.ENVIRONMENT_DOC, IntentCategory.DAILY_STATUS));
+        ChatAssistantService service = new ChatAssistantService(
+                chatClientBuilder, intentClassifier, knowledgeDocs, dailyReports, githubEvents);
+
+        ChatAssistantService.ChatResult result = service.respond(
+                "請說明測試機設定與相關日報", "DEVELOPER");
+
+        assertThat(result.references()).containsExactly(
+                new ChatAssistantService.ChatSource("權威知識庫文件",
+                        "X 專案測試機環境配置與部署 SOP (DOC-ENV-TEST-SERVER-001)", null),
+                new ChatAssistantService.ChatSource("同仁日報", "REP-20261006-01", null));
+        org.mockito.ArgumentCaptor<String> systemPrompt = forClass(String.class);
+        verify(chatClient.prompt()).system(systemPrompt.capture());
+        assertThat(systemPrompt.getValue())
+                .contains("文件編號", "日報編號", "不可捏造識別碼");
+    }
+
     private static ChatAssistantService createService(
             IntentCategory category,
             VectorStore knowledgeDocs,
