@@ -1,0 +1,7 @@
+# Keep local/untracked configuration and build output out of deployment images.
+**/target
+**/application.properties
+**/.env
+**/.env.*
+.git
+.gitignore
