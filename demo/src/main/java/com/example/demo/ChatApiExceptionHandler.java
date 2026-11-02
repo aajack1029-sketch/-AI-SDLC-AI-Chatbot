@@ -3,6 +3,7 @@ package com.example.demo;
 import com.google.genai.errors.ApiException;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import org.springframework.security.access.AccessDeniedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.retry.NonTransientAiException;
@@ -19,6 +20,15 @@ import org.springframework.web.client.RestClientResponseException;
 public class ChatApiExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatApiExceptionHandler.class);
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ChatController.ChatResponse> handleAccessDenied(
+            AccessDeniedException exception) {
+        logger.warn("Access denied for chat request: {}", exception.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .contentType(MediaType.parseMediaType("application/json;charset=UTF-8"))
+                .body(new ChatController.ChatResponse("此帳號沒有聊天 API 權限。"));
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ChatController.ChatResponse> handleChatException(Exception exception) {

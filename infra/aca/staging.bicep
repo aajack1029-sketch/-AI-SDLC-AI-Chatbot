@@ -25,7 +25,7 @@ param revisionSuffix string
 @description('Currently active stable revision name, which will retain 100% traffic.')
 param stableRevisionName string
 
-@description('Keep false until backend authentication and exact-origin CORS are implemented and reviewed.')
+@description('Keep false until the endpoint, token authorization, and exact-origin CORS are verified and staging exposure is approved.')
 param externalIngress bool = false
 
 @description('Container CPU value as JSON numeric text, e.g. a value selected by the operator.')
@@ -52,6 +52,15 @@ param qdrantUseTls bool
 @description('Gemini chat model approved for staging.')
 param geminiChatModel string
 
+@description('Firebase project ID used as the JWT audience.')
+param firebaseProjectId string
+
+@description('Firebase ID token issuer URL for the selected project.')
+param jwtIssuerUri string
+
+@description('Exact HTTPS origin of the staging frontend; no path or wildcard.')
+param appCorsAllowedOrigin string
+
 @secure()
 @description('Gemini Developer API key; passed as a secure deployment parameter.')
 param googleApiKey string
@@ -61,13 +70,13 @@ param googleApiKey string
 param qdrantApiKey string
 
 @description('Staging collection for the knowledge documents.')
-param knowledgeDocsCollection string = 'department_knowledge_docs_gemini_embedding_001'
+param knowledgeDocsCollection string = 'chatbot-context-staging'
 
 @description('Staging collection for daily reports.')
-param dailyReportsCollection string = 'department_daily_reports_gemini_embedding_001'
+param dailyReportsCollection string = 'daily-report-embeddings-staging'
 
 @description('Staging collection for GitHub SDLC events.')
-param githubEventsCollection string = 'github_sdlc_events'
+param githubEventsCollection string = 'github-sdlc-metadata-staging'
 
 resource app 'Microsoft.App/containerApps@2024-03-01' = {
   name: containerAppName
@@ -181,6 +190,18 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
             {
               name: 'GEMINI_CHAT_MODEL'
               value: geminiChatModel
+            }
+            {
+              name: 'FIREBASE_PROJECT_ID'
+              value: firebaseProjectId
+            }
+            {
+              name: 'JWT_ISSUER_URI'
+              value: jwtIssuerUri
+            }
+            {
+              name: 'APP_CORS_ALLOWED_ORIGIN'
+              value: appCorsAllowedOrigin
             }
           ]
           probes: [

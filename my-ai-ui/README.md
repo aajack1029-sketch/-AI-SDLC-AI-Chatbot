@@ -2,6 +2,17 @@
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
+## Firebase Authentication
+
+1. In Firebase Console, add a Web App to project `sdlc-ai-chatbot-e017d` and enable **Authentication → Sign-in method → Email/Password**.
+2. Create user accounts in Firebase Authentication. The chat UI intentionally has no public sign-up flow.
+3. Copy `.env.example` to `.env` and fill in the Web App's `apiKey`, `authDomain`, `projectId`, and `appId`. Set `VITE_CHAT_API_URL` if the backend is not at the local default.
+4. Assign `roles` custom claims (`["DEVELOPER"]` or `["MANAGER"]`) to each authorized Firebase user using a trusted Firebase Admin SDK environment. Never set authorization claims from the browser or expose service-account credentials in Vite.
+   Authentication uses browser-session persistence, so closing the browser tab ends the local sign-in session.
+5. Start Vite with `npm run dev`, then sign in. The frontend refreshes the Firebase ID token to read claims and sends the ID token as `Authorization: Bearer ...` for each chat request. The API role is derived from the verified token, not a client-selected request field.
+
+Vite `VITE_*` values are included in the browser bundle. Firebase Web App configuration is client configuration, not a place for service-account keys or other server secrets.
+
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)

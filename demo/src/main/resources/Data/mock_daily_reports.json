@@ -4,6 +4,7 @@
     "date": "2026-09-14",
     "author": "陳大明",
     "role": "高級前端工程師",
+    "role_access": "DEVELOPER",
     "project": "X專案 (內部管理系統)",
     "tasks_completed": [
       "初始化 React 19 與 Vite 專案結構",
@@ -17,6 +18,7 @@
     "date": "2026-09-14",
     "author": "林小華",
     "role": "雲端架構工程師",
+    "role_access": "DEVELOPER",
     "project": "雲端基建與維運",
     "tasks_completed": [
       "清理內部測試伺服器舊容器，釋放 50GB 磁碟空間",
@@ -30,6 +32,7 @@
     "date": "2026-09-14",
     "author": "張威廉",
     "role": "後端工程師",
+    "role_access": "DEVELOPER",
     "project": "Y專案 (API Gateway)",
     "tasks_completed": [
       "搭建 Java Spring Boot 3.2 基礎專案骨架",
@@ -43,6 +46,7 @@
     "date": "2026-09-14",
     "author": "黃雅婷",
     "role": "資安工程師",
+    "role_access": "DEVELOPER",
     "project": "DevSecOps 治理",
     "tasks_completed": [
       "建立 SonarQube 自動化靜態代碼掃描 Pipeline 腳本",
@@ -56,6 +60,7 @@
     "date": "2026-09-14",
     "author": "李哲宇",
     "role": "AI / Data 工程師",
+    "role_access": "DEVELOPER",
     "project": "LLM & RAG 引擎",
     "tasks_completed": [
       "評估 OpenAI gpt-4o 與 Gemini 1.5 Pro 在中文日報解析上的表現",
@@ -69,6 +74,7 @@
     "date": "2026-09-18",
     "author": "陳大明",
     "role": "高級前端工程師",
+    "role_access": "DEVELOPER",
     "project": "X專案 (內部管理系統)",
     "tasks_completed": [
       "實作前端對話訊息列表，支援 Markdown 格式與語法高亮 (Highlight.js)",
@@ -82,6 +88,7 @@
     "date": "2026-09-18",
     "author": "林小華",
     "role": "雲端架構工程師",
+    "role_access": "DEVELOPER",
     "project": "雲端基建與維運",
     "tasks_completed": [
       "成功部署 Qdrant 單節點容器，設定 API Key 認證機制",
@@ -95,6 +102,7 @@
     "date": "2026-09-18",
     "author": "張威廉",
     "role": "後端工程師",
+    "role_access": "DEVELOPER",
     "project": "Y專案 (API Gateway)",
     "tasks_completed": [
       "完成 JWT Authentication 測試，撰寫驗證單元測試（Unit Test）",
@@ -108,6 +116,7 @@
     "date": "2026-09-18",
     "author": "黃雅婷",
     "role": "資安工程師",
+    "role_access": "DEVELOPER",
     "project": "DevSecOps 治理",
     "tasks_completed": [
       "實施 Qdrant 資料庫網路安全防護，僅限 Localhost 與後端容器網段存取",
@@ -121,6 +130,7 @@
     "date": "2026-09-18",
     "author": "李哲宇",
     "role": "AI / Data 工程師",
+    "role_access": "DEVELOPER",
     "project": "LLM & RAG 引擎",
     "tasks_completed": [
       "選定 `text-embedding-3-small` 作為文本向量化模型",
@@ -134,6 +144,7 @@
     "date": "2026-09-23",
     "author": "陳大明",
     "role": "高級前端工程師",
+    "role_access": "DEVELOPER",
     "project": "X專案 (內部管理系統)",
     "tasks_completed": [
       "完成前端打字機效果（Typing Effect）視覺體驗優化",
@@ -147,6 +158,7 @@
     "date": "2026-09-23",
     "author": "林小華",
     "role": "雲端架構工程師",
+    "role_access": "DEVELOPER",
     "project": "雲端基建與維運",
     "tasks_completed": [
       "設定測試機 SSH 登入雙因子認證（2FA）",
@@ -160,6 +172,7 @@
     "date": "2026-09-23",
     "author": "張威廉",
     "role": "後端工程師",
+    "role_access": "DEVELOPER",
     "project": "Y專案 (API Gateway)",
     "tasks_completed": [
       "成功調用 Qdrant 向量檢索，能依 Query 撈取相似度 Top-3 日報",
@@ -173,6 +186,7 @@
     "date": "2026-09-23",
     "author": "黃雅婷",
     "role": "資安工程師",
+    "role_access": "DEVELOPER",
     "project": "DevSecOps 治理",
     "tasks_completed": [
       "完成初版 Java Guardrails 濾網，可封鎖含 `SYSTEM PROMPT` 關鍵字之請求",
@@ -186,6 +200,7 @@
     "date": "2026-09-23",
     "author": "李哲宇",
     "role": "AI / Data 工程師",
+    "role_access": "DEVELOPER",
     "project": "LLM & RAG 引擎",
     "tasks_completed": [
       "實作混合檢索 (Hybrid Search)，結合 Keyphrase 匹配與 Vector 相似度",
@@ -199,6 +214,7 @@
     "date": "2026-09-28",
     "author": "陳大明",
     "role": "高級前端工程師",
+    "role_access": "DEVELOPER",
     "project": "X專案 (內部管理系統)",
     "tasks_completed": [
       "優化行動端手機瀏覽器介面適配 (RWD)",
@@ -212,6 +228,7 @@
     "date": "2026-09-28",
     "author": "林小華",
     "role": "雲端架構工程師",
+    "role_access": "DEVELOPER",
     "project": "雲端基建與維運",
     "tasks_completed": [
       "設定 CI/CD Pipeline 自動化建置腳本 (GitHub Actions)",
@@ -225,6 +242,7 @@
     "date": "2026-09-28",
     "author": "張威廉",
     "role": "後端工程師",
+    "role_access": "DEVELOPER",
     "project": "Y專案 (API Gateway)",
     "tasks_completed": [
       "完成與 OpenAI API 的 End-to-End 流式回應 (Server-Sent Events, SSE)",
@@ -238,6 +256,7 @@
     "date": "2026-09-28",
     "author": "黃雅婷",
     "role": "資安工程師",
+    "role_access": "DEVELOPER",
     "project": "DevSecOps 治理",
     "tasks_completed": [
       "完成 RBAC 角色與 API Endpoint 的權限綁定 (PreAuthorize 註解)",
@@ -251,6 +270,7 @@
     "date": "2026-09-28",
     "author": "李哲宇",
     "role": "AI / Data 工程師",
+    "role_access": "DEVELOPER",
     "project": "LLM & RAG 引擎",
     "tasks_completed": [
       "導入 RAGAS 評估套件，測試 10 題對話邏輯",
@@ -264,6 +284,7 @@
     "date": "2026-10-02",
     "author": "陳大明",
     "role": "高級前端工程師",
+    "role_access": "DEVELOPER",
     "project": "X專案 (內部管理系統)",
     "tasks_completed": [
       "修復 Issue #1019：網路延遲時點擊發送按鈕引發重複 Submit 問題",
@@ -277,6 +298,7 @@
     "date": "2026-10-02",
     "author": "林小華",
     "role": "雲端架構工程師",
+    "role_access": "DEVELOPER",
     "project": "雲端基建與維運",
     "tasks_completed": [
       "將測試機 IP 正式固定為 192.168.1.100，並設定靜態路由",
@@ -290,6 +312,7 @@
     "date": "2026-10-02",
     "author": "張威廉",
     "role": "後端工程師",
+    "role_access": "DEVELOPER",
     "project": "Y專案 (API Gateway)",
     "tasks_completed": [
       "重構 Intent Classifier，將分類精確度提升至 90%",
@@ -303,6 +326,7 @@
     "date": "2026-10-02",
     "author": "黃雅婷",
     "role": "資安工程師",
+    "role_access": "DEVELOPER",
     "project": "DevSecOps 治理",
     "tasks_completed": [
       "加入敏感資料遮蔽器 (Data Sanitizer)，自動正則替換 Email 與身分證字號",
@@ -316,6 +340,7 @@
     "date": "2026-10-02",
     "author": "李哲宇",
     "role": "AI / Data 工程師",
+    "role_access": "DEVELOPER",
     "project": "LLM & RAG 引擎",
     "tasks_completed": [
       "完成「日報生成摘要」專用 System Prompt 模版設計",
@@ -329,6 +354,7 @@
     "date": "2026-10-05",
     "author": "陳大明",
     "role": "高級前端工程師",
+    "role_access": "DEVELOPER",
     "project": "X專案 (內部管理系統)",
     "tasks_completed": [
       "完成 React 使用者對話介面 UI 繪製與 Markdown 渲染功能",
@@ -342,6 +368,7 @@
     "date": "2026-10-05",
     "author": "林小華",
     "role": "雲端架構工程師",
+    "role_access": "DEVELOPER",
     "project": "雲端基建與維運",
     "tasks_completed": [
       "完成測試機環境配置，IP 設定為 192.168.1.100",
@@ -355,6 +382,7 @@
     "date": "2026-10-05",
     "author": "張威廉",
     "role": "後端工程師",
+    "role_access": "DEVELOPER",
     "project": "Y專案 (API Gateway)",
     "tasks_completed": [
       "撰寫 Java Spring Boot 基礎架構與 JWT Token 驗證邏輯",
@@ -368,6 +396,7 @@
     "date": "2026-10-05",
     "author": "黃雅婷",
     "role": "資安工程師",
+    "role_access": "DEVELOPER",
     "project": "DevSecOps 治理",
     "tasks_completed": [
       "掃描 X 專案 Dependency 漏洞，發現 2 個 Low 風險 CVE",
@@ -381,6 +410,7 @@
     "date": "2026-10-05",
     "author": "李哲宇",
     "role": "AI / Data 工程師",
+    "role_access": "DEVELOPER",
     "project": "LLM & RAG 引擎",
     "tasks_completed": [
       "建立 RAG 自動化 Embedding 寫入指令腳本",
@@ -394,6 +424,7 @@
     "date": "2026-10-06",
     "author": "陳大明",
     "role": "高級前端工程師",
+    "role_access": "DEVELOPER",
     "project": "X專案 (內部管理系統)",
     "tasks_completed": [
       "與張威廉討論 RESTful API Schema 規範",
@@ -407,6 +438,7 @@
     "date": "2026-10-06",
     "author": "林小華",
     "role": "雲端架構工程師",
+    "role_access": "DEVELOPER",
     "project": "雲端基建與維運",
     "tasks_completed": [
       "協助陳大明打包 A 客戶端離線安裝包（Docker Image）",
@@ -420,6 +452,7 @@
     "date": "2026-10-06",
     "author": "張威廉",
     "role": "後端工程師",
+    "role_access": "DEVELOPER",
     "project": "Y專案 (API Gateway)",
     "tasks_completed": [
       "完成 Intent Classifier 初版，支援日報查詢與系統問答分類",
@@ -433,6 +466,7 @@
     "date": "2026-10-06",
     "author": "黃雅婷",
     "role": "資安工程師",
+    "role_access": "DEVELOPER",
     "project": "DevSecOps 治理",
     "tasks_completed": [
       "與張威廉確認 RBAC 機制：只有主管角色能存取 `get_performance_summary` API",
@@ -446,6 +480,7 @@
     "date": "2026-10-06",
     "author": "李哲宇",
     "role": "AI / Data 工程師",
+    "role_access": "DEVELOPER",
     "project": "LLM & RAG 引擎",
     "tasks_completed": [
       "調整向量搜尋 Similarity Threshold，設為 0.75",
@@ -459,6 +494,7 @@
     "date": "2026-10-07",
     "author": "陳大明",
     "role": "高級前端工程師",
+    "role_access": "DEVELOPER",
     "project": "A客戶展示專案",
     "tasks_completed": [
       "前往 A 客戶端進行實體環境建置與系統展示",
@@ -472,6 +508,7 @@
     "date": "2026-10-07",
     "author": "林小華",
     "role": "雲端架構工程師",
+    "role_access": "DEVELOPER",
     "project": "雲端基建與維運",
     "tasks_completed": [
       "完成 GCP 雲端成本盤點，發現 idle 狀態的測試 VM 共 3 台",
@@ -485,6 +522,7 @@
     "date": "2026-10-07",
     "author": "張威廉",
     "role": "後端工程師",
+    "role_access": "DEVELOPER",
     "project": "Y專案 (API Gateway)",
     "tasks_completed": [
       "代理陳大明回應前端關於對話 API 之調用疑問",
@@ -498,6 +536,7 @@
     "date": "2026-10-07",
     "author": "黃雅婷",
     "role": "資安工程師",
+    "role_access": "DEVELOPER",
     "project": "DevSecOps 治理",
     "tasks_completed": [
       "完成測試機 (192.168.1.100) 權限稽核，剔除 2 個無效 SSH Key",
@@ -511,6 +550,7 @@
     "date": "2026-10-07",
     "author": "李哲宇",
     "role": "AI / Data 工程師",
+    "role_access": "DEVELOPER",
     "project": "LLM & RAG 引擎",
     "tasks_completed": [
       "建立首批 15 題 Ground Truth 標準答案數據集 (ground_truth_testset.json)",
@@ -524,6 +564,7 @@
     "date": "2026-10-12",
     "author": "陳大明",
     "role": "高級前端工程師",
+    "role_access": "DEVELOPER",
     "project": "X專案 (內部管理系統)",
     "tasks_completed": [
       "整理 A 客戶展示問題清單，新增 Issue #1080 (界面高解析度適配)",
@@ -537,6 +578,7 @@
     "date": "2026-10-12",
     "author": "林小華",
     "role": "雲端架構工程師",
+    "role_access": "DEVELOPER",
     "project": "雲端基建與維運",
     "tasks_completed": [
       "更新內部 DevDocs 文件，補齊測試機 (192.168.1.100) 部署 SOP",
@@ -550,6 +592,7 @@
     "date": "2026-10-12",
     "author": "張威廉",
     "role": "後端工程師",
+    "role_access": "DEVELOPER",
     "project": "Y專案 (API Gateway)",
     "tasks_completed": [
       "完成 RAG 多條件檢索 API，支援以「日期號碼」與「姓名」過濾",
@@ -563,6 +606,7 @@
     "date": "2026-10-12",
     "author": "黃雅婷",
     "role": "資安工程師",
+    "role_access": "DEVELOPER",
     "project": "DevSecOps 治理",
     "tasks_completed": [
       "測試 Guardrails 濾網，成功攔截 18/20 組 Prompt Injection 攻擊",
@@ -576,6 +620,7 @@
     "date": "2026-10-12",
     "author": "李哲宇",
     "role": "AI / Data 工程師",
+    "role_access": "DEVELOPER",
     "project": "LLM & RAG 引擎",
     "tasks_completed": [
       "實作多日報時間序列摘要演算法",
@@ -589,6 +634,7 @@
     "date": "2026-10-16",
     "author": "陳大明",
     "role": "高級前端工程師",
+    "role_access": "DEVELOPER",
     "project": "X專案 (內部管理系統)",
     "tasks_completed": [
       "完成 Issue #1080 修復並提交 PR",
@@ -602,6 +648,7 @@
     "date": "2026-10-16",
     "author": "林小華",
     "role": "雲端架構工程師",
+    "role_access": "DEVELOPER",
     "project": "雲端基建與維運",
     "tasks_completed": [
       "搭建完成 GitHub MCP Server 測試節點",
@@ -615,6 +662,7 @@
     "date": "2026-10-16",
     "author": "張威廉",
     "role": "後端工程師",
+    "role_access": "DEVELOPER",
     "project": "Y專案 (API Gateway)",
     "tasks_completed": [
       "完成後端併發壓力測試，單一節點可承受 100 QPS",
@@ -628,6 +676,7 @@
     "date": "2026-10-16",
     "author": "黃雅婷",
     "role": "資安工程師",
+    "role_access": "DEVELOPER",
     "project": "DevSecOps 治理",
     "tasks_completed": [
       "重新測試 Prompt Injection，防禦成功率達 100% (20/20)",
@@ -641,6 +690,7 @@
     "date": "2026-10-16",
     "author": "李哲宇",
     "role": "AI / Data 工程師",
+    "role_access": "DEVELOPER",
     "project": "LLM & RAG 引擎",
     "tasks_completed": [
       "完成 50 筆模擬日報數據的全量 Vector DB 寫入與驗證",
@@ -654,6 +704,7 @@
     "date": "2026-10-19",
     "author": "陳大明",
     "role": "高級前端工程師",
+    "role_access": "DEVELOPER",
     "project": "X專案 (內部管理系統)",
     "tasks_completed": [
       "重構對話歷史紀錄模組，降低元件不必要的 Re-render 次數",
@@ -667,6 +718,7 @@
     "date": "2026-10-19",
     "author": "林小華",
     "role": "雲端架構工程師",
+    "role_access": "DEVELOPER",
     "project": "雲端基建與維運",
     "tasks_completed": [
       "向資安組領取 PAT，完成 GitHub MCP Server 權限擴充",
@@ -680,6 +732,7 @@
     "date": "2026-10-19",
     "author": "張威廉",
     "role": "後端工程師",
+    "role_access": "DEVELOPER",
     "project": "Y專案 (API Gateway)",
     "tasks_completed": [
       "撰寫 API Gateway Redis 快取機制，針對意圖分類結果快取 1 小時",
@@ -693,6 +746,7 @@
     "date": "2026-10-19",
     "author": "黃雅婷",
     "role": "資安工程師",
+    "role_access": "DEVELOPER",
     "project": "DevSecOps 治理",
     "tasks_completed": [
       "審核 GitHub MCP Server 權限範疇 (Scope)，僅允許 Read-Only 存取 Issue",
@@ -706,6 +760,7 @@
     "date": "2026-10-19",
     "author": "李哲宇",
     "role": "AI / Data 工程師",
+    "role_access": "DEVELOPER",
     "project": "LLM & RAG 引擎",
     "tasks_completed": [
       "優化 RAG 檢索之 Context Re-ranking 模組，選用 BGE-Reranker",
@@ -719,6 +774,7 @@
     "date": "2026-10-20",
     "author": "陳大明",
     "role": "高級前端工程師",
+    "role_access": "DEVELOPER",
     "project": "X專案 (內部管理系統)",
     "tasks_completed": [
       "實作 API 請求失敗時的指數退避自動重試（Exponential Backoff）機制",
@@ -732,6 +788,7 @@
     "date": "2026-10-20",
     "author": "林小華",
     "role": "雲端架構工程師",
+    "role_access": "DEVELOPER",
     "project": "雲端基建與維運",
     "tasks_completed": [
       "設定 K3s 集群 HPA，當 CPU > 70% 時自動擴充容器節點",
@@ -745,6 +802,7 @@
     "date": "2026-10-20",
     "author": "張威廉",
     "role": "後端工程師",
+    "role_access": "DEVELOPER",
     "project": "Y專案 (API Gateway)",
     "tasks_completed": [
       "整合 BGE-Reranker 至 Java 後端服務",
@@ -758,6 +816,7 @@
     "date": "2026-10-20",
     "author": "黃雅婷",
     "role": "資安工程師",
+    "role_access": "DEVELOPER",
     "project": "DevSecOps 治理",
     "tasks_completed": [
       "測試複雜的 Prompt Injection 語句（如 Unicode 隱藏字元越獄），防禦成功率 100%",
@@ -771,6 +830,7 @@
     "date": "2026-10-20",
     "author": "李哲宇",
     "role": "AI / Data 工程師",
+    "role_access": "DEVELOPER",
     "project": "LLM & RAG 引擎",
     "tasks_completed": [
       "完成「查無內部資料時」之拒絕回答 Prompt 指令微調",
@@ -784,6 +844,7 @@
     "date": "2026-10-21",
     "author": "陳大明",
     "role": "高級前端工程師",
+    "role_access": "DEVELOPER",
     "project": "X專案 (內部管理系統)",
     "tasks_completed": [
       "完成 PoC 展示所需的靜態 Postman / REST Client 測試請求集註解",
@@ -797,6 +858,7 @@
     "date": "2026-10-21",
     "author": "林小華",
     "role": "雲端架構工程師",
+    "role_access": "DEVELOPER",
     "project": "雲端基建與維運",
     "tasks_completed": [
       "完成測試機離線模擬，確認內部 RAG 與 Qdrant 能在無外網環境下精確檢索",
@@ -810,6 +872,7 @@
     "date": "2026-10-21",
     "author": "張威廉",
     "role": "後端工程師",
+    "role_access": "DEVELOPER",
     "project": "Y專案 (API Gateway)",
     "tasks_completed": [
       "完成 HikariCP 連線池優化，併發 QPS 穩定維持於 150 以上",
@@ -823,6 +886,7 @@
     "date": "2026-10-21",
     "author": "黃雅婷",
     "role": "資安工程師",
+    "role_access": "DEVELOPER",
     "project": "DevSecOps 治理",
     "tasks_completed": [
       "完成資安與 RBAC 模組全量審查，無違規紀錄",
@@ -836,6 +900,7 @@
     "date": "2026-10-21",
     "author": "李哲宇",
     "role": "AI / Data 工程師",
+    "role_access": "DEVELOPER",
     "project": "LLM & RAG 引擎",
     "tasks_completed": [
       "執行 70 筆日報全量 Vector DB Embedding 驗證，平均檢索時間 45ms",
@@ -849,6 +914,7 @@
     "date": "2026-10-22",
     "author": "陳大明",
     "role": "高級前端工程師",
+    "role_access": "DEVELOPER",
     "project": "X專案 (內部管理系統)",
     "tasks_completed": [
       "與張威廉演練 Postman 呼叫 API 流程",
@@ -862,6 +928,7 @@
     "date": "2026-10-22",
     "author": "林小華",
     "role": "雲端架構工程師",
+    "role_access": "DEVELOPER",
     "project": "雲端基建與維運",
     "tasks_completed": [
       "確認 GitHub MCP Server 能在 1.5 秒內即時抓取並回傳 GitHub 組織倉庫中的 Issue 清單",
@@ -875,6 +942,7 @@
     "date": "2026-10-22",
     "author": "張威廉",
     "role": "後端工程師",
+    "role_access": "DEVELOPER",
     "project": "Y專案 (API Gateway)",
     "tasks_completed": [
       "完成全流程 API Integration Test，含 Guardrails 攔截、Intent 分類與 RAG 檢索",
@@ -888,6 +956,7 @@
     "date": "2026-10-22",
     "author": "黃雅婷",
     "role": "資安工程師",
+    "role_access": "DEVELOPER",
     "project": "DevSecOps 治理",
     "tasks_completed": [
       "驗證特定防幻覺 Prompt 規則，確認搜尋不到對應人名時會正確觸發警示回應",
@@ -901,6 +970,7 @@
     "date": "2026-10-22",
     "author": "李哲宇",
     "role": "AI / Data 工程師",
+    "role_access": "DEVELOPER",
     "project": "LLM & RAG 引擎",
     "tasks_completed": [
       "將 Ground Truth 測試基準數據集擴充至 20 題，並完成自動化驗收邏輯",
@@ -914,11 +984,26 @@
     "date": "2026-10-13",
     "author": "林小華",
     "role": "DevOps 工程師",
+    "role_access": "DEVELOPER",
     "project": "X 專案",
     "tasks_completed": [
       "檢查 X 專案測試機連線狀況，日報紀錄的測試機 IP 為 192.168.1.100"
     ],
     "issues_and_blockers": "無",
     "tomorrow_plan": "持續處理 X 專案測試機維運工作"
+  },
+  {
+    "report_id": "REP-MOCK-MANAGER-20261102-01",
+    "date": "2026-11-02",
+    "author": "虛構主管（RBAC 測試資料）",
+    "role": "測試用部門主管",
+    "role_access": "MANAGER",
+    "project": "RBAC 虛構薪酬與決策驗證",
+    "tasks_completed": [
+      "【純虛構測試資料，非真實薪資】以 TEST-CREDIT 建立示例薪酬級距：工程師測試職級 E1 為每月 100 TEST-CREDIT，主管測試職級 M1 為每月 140 TEST-CREDIT；TEST-CREDIT 不是貨幣，數值不代表任何真實員工薪資。",
+      "【純虛構決策】決定優先處理登入整合瓶頸，並在完成資安審查前暫緩正式上線。"
+    ],
+    "issues_and_blockers": "本筆所有人員、職級、薪酬數值及決策皆為虛構 RBAC 測試資料，不得視為公司實際資訊。",
+    "tomorrow_plan": "驗證 MANAGER 可檢索本筆測試日報，DEVELOPER 無法檢索。"
   }
 ]

@@ -1,7 +1,17 @@
-import { useRef, useState } from 'react'
-import axios from 'axios'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import axios, { AxiosError } from 'axios'
+import { FirebaseError } from 'firebase/app'
+import {
+  getIdToken,
+  getIdTokenResult,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  type User,
+} from 'firebase/auth'
+import { auth } from './firebase'
 
-type Role = 'DEVELOPER' | 'DEVOPS' | 'MANAGER'
+type Role = 'DEVELOPER' | 'MANAGER' | 'ADMIN'
 
 interface ChatSource {
   label: string
@@ -40,9 +50,76 @@ function App() {
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [allowedRoles, setAllowedRoles] = useState<Role[]>([])
+  const [authReady, setAuthReady] = useState(false)
+  const [authLoading, setAuthLoading] = useState(false)
+  const [authError, setAuthError] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [currentRole, setCurrentRole] = useState<Role>('DEVELOPER')
   const isComposing = useRef(false)
   const compositionEndedAt = useRef(0)
+  const selectedRole = allowedRoles.includes(currentRole)
+    ? currentRole
+    : allowedRoles[0]
+
+  useEffect(() => onAuthStateChanged(auth, async (currentUser) => {
+    setUser(currentUser)
+    setAllowedRoles([])
+    setAuthError('')
+
+    if (!currentUser) {
+      setAuthReady(true)
+      return
+    }
+
+    setAuthReady(false)
+    try {
+      const tokenResult = await getIdTokenResult(currentUser, true)
+      const roleClaim = tokenResult.claims.roles
+      const roles = Array.isArray(roleClaim)
+        ? roleClaim.filter(
+            (role): role is Role =>
+              role === 'DEVELOPER' || role === 'MANAGER' || role === 'ADMIN',
+          )
+        : []
+      setAllowedRoles([...new Set(roles)])
+    } catch (error) {
+      console.error('無法讀取 Firebase 使用者角色:', error)
+      setAuthError('無法驗證使用者權限，請重新登入或聯絡管理員。')
+    } finally {
+      setAuthReady(true)
+    }
+  }), [])
+
+  const handleSignIn = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setAuthLoading(true)
+    setAuthError('')
+    try {
+      await signInWithEmailAndPassword(auth, email.trim(), password)
+      setPassword('')
+    } catch (error) {
+      console.error('Firebase 登入失敗:', error)
+      setAuthError(error instanceof FirebaseError && error.code === 'auth/invalid-credential'
+        ? '電子郵件或密碼錯誤。'
+        : '登入失敗，請確認帳號設定後再試。')
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
+  const handleSignOut = async () => {
+    setAuthError('')
+    try {
+      await signOut(auth)
+      setMessages([])
+    } catch (error) {
+      console.error('Firebase 登出失敗:', error)
+      setAuthError('登出失敗，請稍後再試。')
+    }
+  }
 
   const quickScenarios: QuickScenario[] = [
     {
@@ -66,6 +143,10 @@ function App() {
   ) => {
     const currentInput = (textToSend ?? input).trim()
     if (!currentInput || loading) return
+    if (!user || !selectedRole || selectedRole === 'ADMIN') {
+      setAuthError('此帳號沒有聊天 API 所需的角色權限，請聯絡管理員。')
+      return
+    }
 
     setMessages((previous) => [
       ...previous,
@@ -75,20 +156,29 @@ function App() {
     setLoading(true)
 
     try {
-      const requestBody: {
-        message: string
-        role: Role
-        filters?: GitHubEventFilters
-      } = {
+      const requestBody: { message: string; filters?: GitHubEventFilters } = {
         message: currentInput,
-        role: currentRole,
       }
       if (filters) requestBody.filters = filters
+      const apiUrl =
+        import.meta.env.VITE_CHAT_API_URL ||
+        'http://localhost:8080/api/v1/chat/query'
+      const sendRequest = (idToken: string) =>
+        axios.post<ChatApiResponse>(
+          apiUrl,
+          requestBody,
+          { headers: { Authorization: `Bearer ${idToken}` } },
+        )
 
-      const response = await axios.post<ChatApiResponse>(
-        'http://localhost:8080/api/v1/chat/query',
-        requestBody,
-      )
+      let response
+      try {
+        response = await sendRequest(await getIdToken(user))
+      } catch (error) {
+        if (!(error instanceof AxiosError) || error.response?.status !== 401) {
+          throw error
+        }
+        response = await sendRequest(await getIdToken(user, true))
+      }
 
       const rawReferences =
         response.data.references ?? response.data.sourceUrls ?? response.data.source
@@ -125,12 +215,22 @@ function App() {
 
       setMessages((previous) => [...previous, aiMessage])
     } catch (error) {
-      console.error('API 呼叫或 CORS 連線失敗:', error)
+      const apiError = error instanceof AxiosError ? error : undefined
+      const responseStatus = apiError?.response?.status
+      console.error('聊天 API 呼叫失敗:', {
+        status: responseStatus,
+        authChallenge: apiError?.response?.headers['www-authenticate'],
+      })
+      const errorMessage = responseStatus === 401
+        ? '後端拒絕 Firebase ID Token。請確認後端的 Firebase 專案 ID、JWT issuer 與 JWKS 設定。'
+        : responseStatus === 403
+          ? '此帳號沒有聊天 API 權限，請確認 Firebase 使用者已設定 DEVELOPER 或 MANAGER 角色。'
+          : '⚠️ 系統連線異常，請確認後端服務與 CORS 設定。'
       setMessages((previous) => [
         ...previous,
         {
           sender: 'ai',
-          text: '⚠️ 系統連線異常，請確認後端服務是否啟動，或檢查 CORS 設定。',
+          text: errorMessage,
         },
       ])
     } finally {
@@ -165,6 +265,93 @@ function App() {
     >
       <h2>🤖 SDLC AI Chatbot - 工作日報與權威文件檢索系統</h2>
 
+      {!authReady ? (
+        <p>正在確認 Firebase 登入狀態...</p>
+      ) : !user ? (
+        <form
+          onSubmit={(event) => void handleSignIn(event)}
+          style={{
+            maxWidth: '420px',
+            margin: '32px auto',
+            padding: '24px',
+            border: '1px solid #ddd',
+            borderRadius: '8px',
+            display: 'grid',
+            gap: '12px',
+            textAlign: 'left',
+          }}
+        >
+          <h3 style={{ margin: 0 }}>使用 Firebase 帳號登入</h3>
+          <label htmlFor="email">電子郵件</label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            autoComplete="username"
+            onChange={(event) => setEmail(event.target.value)}
+            required
+            disabled={authLoading}
+          />
+          <label htmlFor="password">密碼</label>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            autoComplete="current-password"
+            onChange={(event) => setPassword(event.target.value)}
+            required
+            disabled={authLoading}
+          />
+          {authError && <p role="alert" style={{ color: '#b42318' }}>{authError}</p>}
+          <button type="submit" disabled={authLoading}>
+            {authLoading ? '登入中...' : '登入'}
+          </button>
+          <p style={{ fontSize: '13px', color: '#666' }}>
+            帳號由管理員在 Firebase Authentication 建立；此介面不提供註冊。
+          </p>
+        </form>
+      ) : !selectedRole ? (
+        <div style={{ margin: '32px auto', maxWidth: '520px' }}>
+          <p>已登入 {user.email || user.uid}，但帳號未獲授權使用聊天服務。</p>
+          <p role="alert" style={{ color: '#b42318' }}>
+            {authError || '請聯絡管理員確認 Firebase ID Token 的 roles claim。'}
+          </p>
+          <button type="button" onClick={() => void handleSignOut()}>登出</button>
+        </div>
+      ) : selectedRole === 'ADMIN' ? (
+        <div style={{ margin: '32px auto', maxWidth: '520px' }}>
+          <p>已登入 {user.email || user.uid}，角色：後台管理者。</p>
+          {allowedRoles.length > 1 && (
+            <label>
+              切換角色{' '}
+              <select
+                value={selectedRole}
+                onChange={(event) => {
+                  const role = allowedRoles.find(
+                    (allowedRole) => allowedRole === event.target.value,
+                  )
+                  if (role) setCurrentRole(role)
+                }}
+              >
+                {allowedRoles.map((role) => (
+                  <option key={role} value={role}>
+                    {role === 'DEVELOPER'
+                      ? '員工'
+                      : role === 'MANAGER'
+                        ? '部門主管'
+                        : '後台管理者'}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <p role="status">
+            後台管理功能尚未開放。此角色目前不能使用聊天或日報檢索 API。
+          </p>
+          <button type="button" onClick={() => void handleSignOut()}>登出</button>
+        </div>
+      ) : (
+      <>
       <div
         style={{
           marginBottom: '14px',
@@ -177,29 +364,38 @@ function App() {
           flexWrap: 'wrap',
         }}
       >
-        <label htmlFor="role-select" style={{ fontWeight: 600 }}>
-          🎭 檢索角色
-        </label>
+        <span style={{ fontWeight: 600 }}>👤 {user.email || user.uid}</span>
+        <label htmlFor="role-select" style={{ fontWeight: 600 }}>授權角色</label>
         <select
           id="role-select"
-          value={currentRole}
+          value={selectedRole}
           onChange={(event) => {
-            const role = event.target.value
-            if (role === 'DEVELOPER' || role === 'DEVOPS' || role === 'MANAGER') {
-              setCurrentRole(role)
-            }
+            const role = allowedRoles.find(
+              (allowedRole) => allowedRole === event.target.value,
+            )
+            if (role) setCurrentRole(role)
           }}
-          disabled={loading}
+          disabled={loading || allowedRoles.length < 2}
           style={{ padding: '7px 10px', borderRadius: '6px' }}
         >
-          <option value="DEVELOPER">開發人員</option>
-          <option value="DEVOPS">維運人員</option>
-          <option value="MANAGER">管理者</option>
+          {allowedRoles.map((role) => (
+            <option key={role} value={role}>
+              {role === 'DEVELOPER'
+                ? '員工'
+                : role === 'MANAGER'
+                  ? '部門主管'
+                  : '後台管理者'}
+            </option>
+          ))}
         </select>
         <span style={{ fontSize: '13px', color: '#666' }}>
-          角色會隨提問傳送給助理
+          角色由 Firebase 驗證的 ID Token 決定
         </span>
+        <button type="button" onClick={() => void handleSignOut()} disabled={loading}>
+          登出
+        </button>
       </div>
+      {authError && <p role="alert" style={{ color: '#b42318' }}>{authError}</p>}
 
       <div style={{ marginBottom: '14px' }}>
         <div style={{ marginBottom: '8px', fontSize: '14px', color: '#666' }}>
@@ -368,6 +564,8 @@ function App() {
           送出
         </button>
       </div>
+      </>
+      )}
     </div>
   )
 }

@@ -37,9 +37,11 @@ docker run -d --name qdrant-dev-v1-18 -p 6333:6333 -p 6334:6334 qdrant/qdrant:v1
 
 步驟 2：設定環境變數並啟動 Spring Boot 後端
 在 `demo` 目錄開啟 PowerShell 視窗，設定 API Key 並啟動服務：
-【首次啟動】（自動匯入權威文件與 71 筆日報）
+【首次啟動】（自動匯入權威文件與 72 筆日報，含 1 筆明確標示的虛構 MANAGER RBAC 測試資料）
 ```powershell
 $env:GOOGLE_API_KEY="你的_GEMINI_API_KEY"
+$env:JWT_ISSUER_URI="你的_OIDC_issuer_URL"
+$env:FIREBASE_PROJECT_ID="你的_Firebase_project_ID"
 $env:GITHUB_PERSONAL_ACCESS_TOKEN="你的_GITHUB_PAT"
 $env:GITHUB_REPOSITORY_OWNER="你的_GITHUB_組織或帳號"
 $env:GITHUB_REPOSITORY_NAME="你的_REPOSITORY"
@@ -49,6 +51,8 @@ $env:GITHUB_REPOSITORY_NAME="你的_REPOSITORY"
 【後續啟動】（跳過向量重複寫入，加速啟動速度）
 ```powershell
 $env:GOOGLE_API_KEY="你的_GEMINI_API_KEY"
+$env:JWT_ISSUER_URI="你的_OIDC_issuer_URL"
+$env:FIREBASE_PROJECT_ID="你的_Firebase_project_ID"
 $env:GITHUB_PERSONAL_ACCESS_TOKEN="你的_GITHUB_PAT"
 $env:GITHUB_REPOSITORY_OWNER="你的_GITHUB_組織或帳號"
 $env:GITHUB_REPOSITORY_NAME="你的_REPOSITORY"
@@ -65,6 +69,8 @@ Linux / macOS 啟動方式：
 ```bash
 cd demo
 export GOOGLE_API_KEY="你的_GEMINI_API_KEY"
+export JWT_ISSUER_URI="你的_OIDC_issuer_URL"
+export FIREBASE_PROJECT_ID="你的_Firebase_project_ID"
 ./mvnw spring-boot:run
 ```
 
@@ -137,6 +143,7 @@ curl -X POST http://localhost:8080/api/v1/chat/query \
   ```bash
   curl -X POST http://localhost:8080/api/v1/chat/query \
     -H 'Content-Type: application/json' \
+    -H "Authorization: Bearer $ACCESS_TOKEN" \
     -d '{"message":"哪個 PR 修復登入問題？","role":"DEVELOPER","filters":{"eventType":"pull_request","state":"merged","label":"bug"}}'
   ```
 - `GITHUB_SYNC_ENABLED` 預設為 `false`，因此原有聊天與啟動流程不會在未設定 GitHub PAT 時嘗試同步。要查詢最新同步資料，先啟用同步並等待成功日誌。
@@ -157,8 +164,14 @@ PowerShell 請以 `$env:GITHUB_SYNC_ENABLED="true"` 啟用排程，並在啟動 
 ## 文件與日報檢索優先級
 
 - 權威專案文件由 `src/main/resources/Data/knowledge_docs.json` 載入 `department_knowledge_docs_gemini_embedding_001` collection。
-- 同仁日報由 `src/main/resources/Data/mock_daily_reports.json` 載入 `department_daily_reports_gemini_embedding_001` collection。
+- 同仁日報由 `src/main/resources/Data/mock_daily_reports.json` 載入 `department_daily_reports_gemini_embedding_001` collection；每筆日報必須明確標記 `role_access` 為 `PUBLIC`、`DEVELOPER` 或 `MANAGER`，缺少或不合法的標籤會使匯入失敗。
 - 單一 `ENVIRONMENT_DOC` 問題只檢索權威文件；單一 `DAILY_STATUS` 問題只檢索日報；同時涉及兩者時會同時檢索；`GENERAL_CHAT` 不執行向量檢索。
+- 聊天 API 使用 OAuth 2.0 Bearer JWT。部署時必須設定 `JWT_ISSUER_URI` 為身分提供者的 OIDC issuer URL，並將 `FIREBASE_PROJECT_ID` 設為 Firebase 專案 ID；後端驗證 issuer、簽章、有效時間及 `aud` 專案對象。Firebase 專案 ID 預設為本專案的 `sdlc-ai-chatbot-e017d`，Firebase 公鑰來源預設為官方 JWKS URL，也可用 `FIREBASE_JWK_SET_URI` 覆寫；直接設定 JWKS 可避免啟動時依賴 OIDC issuer discovery。JWT 只從 `roles` 字串陣列讀取 `DEVELOPER`/`MANAGER` 權限，請求 JSON 中的 `role` 欄位不作為授權依據。`APP_CORS_ALLOWED_ORIGIN` 可設定前端來源，預設為 `http://localhost:5173`。
+- API 呼叫需附上由該 issuer 簽發的 Firebase ID Token。React 開發 UI 已整合 Firebase Email/Password 登入，登入後會自動取得並以 Bearer token 傳送 ID Token；前端角色選擇僅顯示 token 中已授權的 `roles`，不會把角色當成授權依據傳給後端。請先依 `my-ai-ui/README.md` 設定 Firebase Web App 環境變數，並在 Firebase Authentication 建立帳號及由可信任管理端設定角色 claim。不要把服務帳戶憑證放入 Vite 環境變數。
+- 日報檢索會在 Qdrant 端套用 `role_access` filter：`DEVELOPER` 可查 `DEVELOPER`/`PUBLIC`，`MANAGER` 可查 `MANAGER`/`DEVELOPER`/`PUBLIC`。所有目前的 mock 工程日報明確標為 `DEVELOPER`；新增主管專屬報告時必須在來源資料標 `MANAGER`。舊 Qdrant 日報沒有 `role_access` 時不會符合任何角色 filter；請在部署時啟用一次 `APP_INGESTION_ENABLED=true` 重新匯入，確認標籤寫入後再關閉啟動匯入。
+- Prompt injection 命中時，請求會在意圖分類、Qdrant 與 Gemini 呼叫之前被攔截。無符合權限的日報檢索結果會直接回覆「在您的權限範圍內未找到相關紀錄。」。
+- Firebase 角色包含 `DEVELOPER`（員工）、`MANAGER`（部門主管）與 `ADMIN`（後台管理者）。`ADMIN` 目前僅作身分辨識，不可呼叫聊天 API；管理使用者、Audit Logs 與 Qdrant 的後台功能尚未實作。
+- `mock_daily_reports.json` 包含 `REP-MOCK-MANAGER-20261102-01`，這是明確標示的虛構 RBAC 測試資料，薪酬採非貨幣 `TEST-CREDIT` 單位，不代表任何真實薪資或公司決策。
 - 日報可能記錄測試機 IP `192.168.1.100`，權威文件記載的現行 IP 為 `192.168.1.105`。若問題涉及現行環境配置，系統以權威文件為準；日報僅代表歷史工作紀錄。Ground Truth 的 TC-003 用來檢查回答是否採用權威文件。
 - 可用 `QDRANT_KNOWLEDGE_DOCS_COLLECTION` 與 `QDRANT_DAILY_REPORTS_COLLECTION` 分別設定 collection 名稱。日報 collection 預設沿用既有 `QDRANT_COLLECTION` 設定。
 

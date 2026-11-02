@@ -14,11 +14,15 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class VectorIngestionService implements CommandLineRunner {
+
+    private static final Set<String> ALLOWED_ROLE_ACCESS =
+            Set.of("PUBLIC", "DEVELOPER", "MANAGER");
 
     private final VectorStore knowledgeDocsVectorStore;
     private final VectorStore dailyReportsVectorStore;
@@ -72,6 +76,11 @@ public class VectorIngestionService implements CommandLineRunner {
 
         List<Document> documents = reports.stream().map(report -> {
             String reportId = String.valueOf(report.getOrDefault("report_id", ""));
+            Object roleAccess = report.get("role_access");
+            if (!(roleAccess instanceof String access) || !ALLOWED_ROLE_ACCESS.contains(access)) {
+                throw new IllegalStateException(
+                        "Daily report " + reportId + " must declare role_access as PUBLIC, DEVELOPER, or MANAGER");
+            }
             
             String content = String.format(
                 "日報編號: %s\n日期: %s\n姓名: %s\n職稱: %s\n專案: %s\n完成任務: %s\n遇到的問題: %s\n明日計畫: %s",
@@ -91,6 +100,7 @@ public class VectorIngestionService implements CommandLineRunner {
             metadata.put("date", getOrDefault(report, "date"));
             metadata.put("author", getOrDefault(report, "author"));
             metadata.put("project", getOrDefault(report, "project"));
+            metadata.put("role_access", access);
 
             // 帶入固定 ID（如 report_id），避免 Qdrant 重複寫入相同資料
             String documentUuid = reportId.isEmpty() 

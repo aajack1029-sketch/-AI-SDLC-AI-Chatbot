@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.nio.charset.StandardCharsets;
@@ -16,6 +18,7 @@ import java.util.List;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -137,6 +140,20 @@ class ChatControllerTests {
     }
 
     @Test
+    void ignoresUntrustedRoleSuppliedInRequestBody() throws Exception {
+        ChatAssistantService assistantService = mock(ChatAssistantService.class);
+        when(assistantService.respond("問題", "DEVELOPER"))
+                .thenReturn(new ChatAssistantService.ChatResult(IntentCategory.DAILY_STATUS, "回答"));
+
+        createMockMvc(assistantService).perform(post("/api/v1/chat/query")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"message\":\"問題\",\"role\":\"MANAGER\"}"))
+                .andExpect(status().isOk());
+
+        verify(assistantService).respond("問題", "DEVELOPER");
+    }
+
+    @Test
     void rejectsNonPositiveGithubEventNumbers() throws Exception {
         ChatAssistantService assistantService = mock(ChatAssistantService.class);
         createMockMvc(assistantService).perform(post("/api/v1/chat/query")
@@ -146,6 +163,20 @@ class ChatControllerTests {
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.answer").value("GitHub 事件編號必須大於零。"));
+    }
+
+    @Test
+    void deniesAdminRoleFromChatApi() throws Exception {
+        ChatAssistantService assistantService = mock(ChatAssistantService.class);
+
+        createMockMvc(assistantService, "ROLE_ADMIN")
+                .perform(post("/api/v1/chat/query")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"message\":\"管理者查詢\"}"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.answer").value("此帳號沒有聊天 API 權限。"));
+
+        verifyNoInteractions(assistantService);
     }
 
     @Test
@@ -226,7 +257,14 @@ class ChatControllerTests {
     }
 
     private static MockMvc createMockMvc(ChatAssistantService assistantService) {
+        return createMockMvc(assistantService, "ROLE_DEVELOPER");
+    }
+
+    private static MockMvc createMockMvc(ChatAssistantService assistantService, String role) {
         return MockMvcBuilders.standaloneSetup(new ChatController(assistantService))
+                .defaultRequest(post("/").principal(new UsernamePasswordAuthenticationToken(
+                        "test-user", "unused",
+                        List.of(new SimpleGrantedAuthority(role)))))
                 .setControllerAdvice(new ChatApiExceptionHandler())
                 .build();
     }

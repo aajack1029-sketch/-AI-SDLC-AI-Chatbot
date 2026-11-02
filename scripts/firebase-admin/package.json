@@ -1,0 +1,11 @@
+{
+  "name": "firebase-role-admin",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "set-role": "node set-user-role.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.5.0"
+  }
+}
