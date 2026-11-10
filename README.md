@@ -20,18 +20,26 @@
 docker run -d --name qdrant-dev-v1-18 -p 6333:6333 -p 6334:6334 qdrant/qdrant:v1.18.0
 
 步驟 2：設定環境變數並啟動 Spring Boot 後端
-在專案根目錄開啟 PowerShell 視窗，設定 API Key 並啟動服務：
+在專案根目錄開啟 PowerShell 視窗，先進入 `demo`，再設定 API Key 與 Firebase JWT issuer 並啟動服務：
 【首次啟動】（自動將 70 筆日報寫入向量庫）
 ```powershell
+cd demo
 $env:GOOGLE_API_KEY="你的_GEMINI_API_KEY"
+$env:FIREBASE_PROJECT_ID="sdlc-ai-chatbot-e017d"
+$env:JWT_ISSUER_URI="https://securetoken.google.com/$env:FIREBASE_PROJECT_ID"
 .\mvnw.cmd spring-boot:run
+```
 
 【後續啟動】（跳過向量重複寫入，加速啟動速度）
 ```powershell
+cd demo
 $env:GOOGLE_API_KEY="你的_GEMINI_API_KEY"
+$env:FIREBASE_PROJECT_ID="sdlc-ai-chatbot-e017d"
+$env:JWT_ISSUER_URI="https://securetoken.google.com/$env:FIREBASE_PROJECT_ID"
 $env:APP_INGESTION_ENABLED="false"
 $env:GEMINI_CHAT_MODEL="gemini-3.5-flash-lite"  
 .\mvnw.cmd spring-boot:run
+```
 
 ->$env:GEMINI_CHAT_MODEL：這個可以看看自己的RPM來去更改，如果已經達到流量限制，只要是Category:Text-out models的，都可以使用。
 
@@ -99,6 +107,8 @@ docker start qdrant-dev
 ```bash
 cd demo
 export GOOGLE_API_KEY="你的_GEMINI_API_KEY"
+export FIREBASE_PROJECT_ID="sdlc-ai-chatbot-e017d"
+export JWT_ISSUER_URI="https://securetoken.google.com/${FIREBASE_PROJECT_ID}"
 ./mvnw spring-boot:run
 ```
 
@@ -107,6 +117,8 @@ Windows PowerShell 可使用：
 ```powershell
 cd demo
 $env:GOOGLE_API_KEY = "你的_GEMINI_API_KEY"
+$env:FIREBASE_PROJECT_ID = "sdlc-ai-chatbot-e017d"
+$env:JWT_ISSUER_URI = "https://securetoken.google.com/$env:FIREBASE_PROJECT_ID"
 .\mvnw.cmd spring-boot:run
 ```
 
