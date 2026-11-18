@@ -3,11 +3,13 @@ package com.example.demo;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/chat")
@@ -26,17 +28,33 @@ public class ChatController {
         if (request == null || !StringUtils.hasText(request.message())) {
             return ResponseEntity.badRequest().body(new ChatResponse("請輸入有效的提問內容！"));
         }
+        if (StringUtils.hasText(request.conversationId()) && !isValidConversationId(request.conversationId())) {
+            return ResponseEntity.badRequest().body(new ChatResponse("請提供有效的對話識別碼！"));
+        }
 
         String role = resolveRole(authentication);
         if (request.filters() != null && request.filters().number() != null
                 && request.filters().number() < 1) {
             return ResponseEntity.badRequest().body(new ChatResponse("GitHub 事件編號必須大於零。"));
         }
+        String userId = resolveUserId(authentication);
+        String conversationId = StringUtils.hasText(request.conversationId())
+                ? request.conversationId()
+                : UUID.randomUUID().toString();
         ChatAssistantService.ChatResult result = request.filters() == null
-                ? chatAssistantService.respond(request.message(), role)
-                : chatAssistantService.respond(request.message(), role, request.filters());
+                ? chatAssistantService.respondForUser(userId, conversationId, request.message(), role)
+                : chatAssistantService.respondForUser(
+                        userId, conversationId, request.message(), role, request.filters());
         return ResponseEntity.ok(new ChatResponse(
                 result.answer(), result.intent(), result.intents(), result.references()));
+    }
+
+    private static boolean isValidConversationId(String conversationId) {
+        try {
+            return UUID.fromString(conversationId).toString().equalsIgnoreCase(conversationId);
+        } catch (IllegalArgumentException exception) {
+            return false;
+        }
     }
 
     private String resolveRole(Authentication authentication) {
@@ -58,8 +76,17 @@ public class ChatController {
         throw new AccessDeniedException("A DEVELOPER or MANAGER role is required.");
     }
 
+    private String resolveUserId(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()
+                || !(authentication.getPrincipal() instanceof Jwt jwt)
+                || !StringUtils.hasText(jwt.getSubject())) {
+            throw new AccessDeniedException("An authenticated Firebase user ID is required.");
+        }
+        return jwt.getSubject();
+    }
+
     // 使用 Java Record 作為 DTO (不可變、自動產生 Getter/Constructor/Equals/ToString)
-    public record ChatRequest(String message, String role, GitHubEventFilters filters) {}
+    public record ChatRequest(String message, String role, GitHubEventFilters filters, String conversationId) {}
 
     public record ChatResponse(
             String answer,

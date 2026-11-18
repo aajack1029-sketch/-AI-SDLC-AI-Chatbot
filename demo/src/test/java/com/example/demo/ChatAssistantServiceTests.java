@@ -2,6 +2,8 @@ package com.example.demo;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -9,11 +11,14 @@ import com.example.demo.security.InputSanitizer;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -22,16 +27,100 @@ import static org.mockito.Mockito.when;
 class ChatAssistantServiceTests {
 
     @Test
+    void bindsGeneralChatMemoryToTheSuppliedConversationId() {
+        VectorStore knowledgeDocs = mock(VectorStore.class);
+        VectorStore dailyReports = mock(VectorStore.class);
+        VectorStore githubEvents = mock(VectorStore.class);
+        ChatClient chatClient = mock(ChatClient.class);
+        ChatClient.ChatClientRequestSpec promptSpec =
+                mock(ChatClient.ChatClientRequestSpec.class, org.mockito.Mockito.RETURNS_SELF);
+        ChatClient.CallResponseSpec responseSpec = mock(ChatClient.CallResponseSpec.class);
+        ChatClient.AdvisorSpec advisorSpec = mock(ChatClient.AdvisorSpec.class);
+        when(chatClient.prompt()).thenReturn(promptSpec);
+        when(promptSpec.call()).thenReturn(responseSpec);
+        when(responseSpec.content()).thenReturn("這是根據前文的回答。");
+        doAnswer(invocation -> {
+            Consumer<ChatClient.AdvisorSpec> advisor = invocation.getArgument(0);
+            advisor.accept(advisorSpec);
+            return promptSpec;
+        }).when(promptSpec).advisors(any(Consumer.class));
+        ChatClient.Builder chatClientBuilder = createChatClientBuilder();
+        when(chatClientBuilder.build()).thenReturn(chatClient);
+        IntentClassifier intentClassifier = mock(IntentClassifier.class);
+        when(intentClassifier.classify(any())).thenReturn(List.of(IntentCategory.GENERAL_CHAT));
+        ChatAssistantService service = new ChatAssistantService(
+                chatClientBuilder, MessageWindowChatMemory.builder().build(),
+                intentClassifier, new InputSanitizer(),
+                knowledgeDocs, dailyReports, githubEvents);
+        String conversationId = UUID.randomUUID().toString();
+
+        service.respond(conversationId, "我上個問題問甚麼？", "DEVELOPER");
+
+        verify(chatClientBuilder).defaultAdvisors(any(
+                org.springframework.ai.chat.client.advisor.api.Advisor[].class));
+        verify(advisorSpec).param(ChatMemory.CONVERSATION_ID, conversationId);
+    }
+
+    @Test
+    void storesRetrievalNoResultTurnsInConversationMemory() {
+        VectorStore knowledgeDocs = mock(VectorStore.class);
+        VectorStore dailyReports = mock(VectorStore.class);
+        VectorStore githubEvents = mock(VectorStore.class);
+        ChatMemory chatMemory = MessageWindowChatMemory.builder().maxMessages(10).build();
+        ChatClient.Builder chatClientBuilder = createChatClientBuilder();
+        when(chatClientBuilder.build()).thenReturn(mock(ChatClient.class));
+        IntentClassifier intentClassifier = mock(IntentClassifier.class);
+        when(intentClassifier.classify(any())).thenReturn(List.of(IntentCategory.GITHUB_SDLC));
+        ChatAssistantService service = new ChatAssistantService(
+                chatClientBuilder, chatMemory, intentClassifier, new InputSanitizer(),
+                knowledgeDocs, dailyReports, githubEvents);
+        String conversationId = UUID.randomUUID().toString();
+
+        ChatAssistantService.ChatResult result = service.respondForUser(
+                "firebase-uid-123", conversationId, "哪個 PR 修復登入問題？", "DEVELOPER");
+
+        assertThat(result.answer()).isEqualTo("在 GitHub 紀錄中未找到與您的問題相關的資料。");
+        assertThat(chatMemory.get("firebase-uid-123:" + conversationId))
+                .extracting(message -> message.getText())
+                .containsExactly(
+                        "哪個 PR 修復登入問題？",
+                        "在 GitHub 紀錄中未找到與您的問題相關的資料。");
+        assertThat(chatMemory.get(conversationId)).isEmpty();
+    }
+
+    @Test
+    void isolatesConversationMemoryByFirebaseUserId() {
+        VectorStore knowledgeDocs = mock(VectorStore.class);
+        VectorStore dailyReports = mock(VectorStore.class);
+        VectorStore githubEvents = mock(VectorStore.class);
+        ChatMemory chatMemory = MessageWindowChatMemory.builder().maxMessages(10).build();
+        ChatClient.Builder chatClientBuilder = createChatClientBuilder();
+        when(chatClientBuilder.build()).thenReturn(mock(ChatClient.class));
+        IntentClassifier intentClassifier = mock(IntentClassifier.class);
+        when(intentClassifier.classify(any())).thenReturn(List.of(IntentCategory.GITHUB_SDLC));
+        ChatAssistantService service = new ChatAssistantService(
+                chatClientBuilder, chatMemory, intentClassifier, new InputSanitizer(),
+                knowledgeDocs, dailyReports, githubEvents);
+        String conversationId = UUID.randomUUID().toString();
+
+        service.respondForUser("firebase-user-a", conversationId, "A 的問題", "DEVELOPER");
+
+        assertThat(chatMemory.get("firebase-user-a:" + conversationId)).hasSize(2);
+        assertThat(chatMemory.get("firebase-user-b:" + conversationId)).isEmpty();
+    }
+
+    @Test
     void blocksPromptInjectionBeforeClassificationAndProviderCalls() {
         VectorStore knowledgeDocs = mock(VectorStore.class);
         VectorStore dailyReports = mock(VectorStore.class);
         VectorStore githubEvents = mock(VectorStore.class);
         IntentClassifier intentClassifier = mock(IntentClassifier.class);
         ChatClient chatClient = mock(ChatClient.class, RETURNS_DEEP_STUBS);
-        ChatClient.Builder chatClientBuilder = mock(ChatClient.Builder.class);
+        ChatClient.Builder chatClientBuilder = createChatClientBuilder();
         when(chatClientBuilder.build()).thenReturn(chatClient);
         ChatAssistantService service = new ChatAssistantService(
-                chatClientBuilder, intentClassifier, new InputSanitizer(),
+                chatClientBuilder, MessageWindowChatMemory.builder().build(),
+                intentClassifier, new InputSanitizer(),
                 knowledgeDocs, dailyReports, githubEvents);
 
         ChatAssistantService.ChatResult result = service.respond(
@@ -134,12 +223,13 @@ class ChatAssistantServiceTests {
         when(chatClient.prompt()).thenReturn(promptSpec);
         when(promptSpec.call()).thenReturn(responseSpec);
         when(responseSpec.content()).thenReturn("在您的權限範圍內未找到相關紀錄。");
-        ChatClient.Builder chatClientBuilder = mock(ChatClient.Builder.class);
+        ChatClient.Builder chatClientBuilder = createChatClientBuilder();
         when(chatClientBuilder.build()).thenReturn(chatClient);
         IntentClassifier intentClassifier = mock(IntentClassifier.class);
         when(intentClassifier.classify(any())).thenReturn(List.of(IntentCategory.DAILY_STATUS));
         ChatAssistantService service = new ChatAssistantService(
-                chatClientBuilder, intentClassifier, new InputSanitizer(),
+                chatClientBuilder, MessageWindowChatMemory.builder().build(),
+                intentClassifier, new InputSanitizer(),
                 knowledgeDocs, dailyReports, githubEvents);
 
         ChatAssistantService.ChatResult result =
@@ -169,10 +259,11 @@ class ChatAssistantServiceTests {
         when(chatClient.prompt()).thenReturn(promptSpec);
         when(promptSpec.call()).thenReturn(responseSpec);
         when(responseSpec.content()).thenReturn("測試回答");
-        ChatClient.Builder chatClientBuilder = mock(ChatClient.Builder.class);
+        ChatClient.Builder chatClientBuilder = createChatClientBuilder();
         when(chatClientBuilder.build()).thenReturn(chatClient);
         ChatAssistantService service = new ChatAssistantService(
-                chatClientBuilder, intentClassifier, new InputSanitizer(),
+                chatClientBuilder, MessageWindowChatMemory.builder().build(),
+                intentClassifier, new InputSanitizer(),
                 knowledgeDocs, dailyReports, githubEvents);
 
         ChatAssistantService.ChatResult result = service.respond(
@@ -227,12 +318,13 @@ class ChatAssistantServiceTests {
         when(chatClient.prompt()).thenReturn(promptSpec);
         when(promptSpec.call()).thenReturn(responseSpec);
         when(responseSpec.content()).thenReturn("測試回答");
-        ChatClient.Builder chatClientBuilder = mock(ChatClient.Builder.class);
+        ChatClient.Builder chatClientBuilder = createChatClientBuilder();
         when(chatClientBuilder.build()).thenReturn(chatClient);
         IntentClassifier intentClassifier = mock(IntentClassifier.class);
         when(intentClassifier.classify(any())).thenReturn(List.of(IntentCategory.GITHUB_SDLC));
         ChatAssistantService service = new ChatAssistantService(
-                chatClientBuilder, intentClassifier, new InputSanitizer(),
+                chatClientBuilder, MessageWindowChatMemory.builder().build(),
+                intentClassifier, new InputSanitizer(),
                 knowledgeDocs, dailyReports, githubEvents);
 
         ChatAssistantService.ChatResult result = service.respond("昨天提交了什麼程式碼修復？", "DEVELOPER");
@@ -260,10 +352,11 @@ class ChatAssistantServiceTests {
         IntentClassifier intentClassifier = mock(IntentClassifier.class);
         when(intentClassifier.classify(any())).thenReturn(List.of(IntentCategory.GITHUB_SDLC));
         ChatClient chatClient = mock(ChatClient.class, RETURNS_DEEP_STUBS);
-        ChatClient.Builder chatClientBuilder = mock(ChatClient.Builder.class);
+        ChatClient.Builder chatClientBuilder = createChatClientBuilder();
         when(chatClientBuilder.build()).thenReturn(chatClient);
         ChatAssistantService service = new ChatAssistantService(
-                chatClientBuilder, intentClassifier, new InputSanitizer(),
+                chatClientBuilder, MessageWindowChatMemory.builder().build(),
+                intentClassifier, new InputSanitizer(),
                 knowledgeDocs, dailyReports, githubEvents);
 
         ChatAssistantService.ChatResult result = service.respond("登入修復", "DEVELOPER",
@@ -309,12 +402,13 @@ class ChatAssistantServiceTests {
                         Map.of("event_type", "issue", "number", 12,
                                 "reference_urls", List.of("https://github.com/example/repo/issues/12")))));
         ChatClient chatClient = mock(ChatClient.class, RETURNS_DEEP_STUBS);
-        ChatClient.Builder chatClientBuilder = mock(ChatClient.Builder.class);
+        ChatClient.Builder chatClientBuilder = createChatClientBuilder();
         when(chatClientBuilder.build()).thenReturn(chatClient);
         IntentClassifier intentClassifier = mock(IntentClassifier.class);
         when(intentClassifier.classify(any())).thenReturn(List.of(IntentCategory.GITHUB_SDLC));
         ChatAssistantService service = new ChatAssistantService(
-                chatClientBuilder, intentClassifier, new InputSanitizer(),
+                chatClientBuilder, MessageWindowChatMemory.builder().build(),
+                intentClassifier, new InputSanitizer(),
                 knowledgeDocs, dailyReports, githubEvents);
 
         ChatAssistantService.ChatResult result = service.respond(
@@ -338,13 +432,14 @@ class ChatAssistantServiceTests {
                 .thenReturn(List.of(new Document("report-id", "日報內容",
                         Map.of("report_id", "REP-20261006-01"))));
         ChatClient chatClient = mock(ChatClient.class, RETURNS_DEEP_STUBS);
-        ChatClient.Builder chatClientBuilder = mock(ChatClient.Builder.class);
+        ChatClient.Builder chatClientBuilder = createChatClientBuilder();
         when(chatClientBuilder.build()).thenReturn(chatClient);
         IntentClassifier intentClassifier = mock(IntentClassifier.class);
         when(intentClassifier.classify(any()))
                 .thenReturn(List.of(IntentCategory.ENVIRONMENT_DOC, IntentCategory.DAILY_STATUS));
         ChatAssistantService service = new ChatAssistantService(
-                chatClientBuilder, intentClassifier, new InputSanitizer(),
+                chatClientBuilder, MessageWindowChatMemory.builder().build(),
+                intentClassifier, new InputSanitizer(),
                 knowledgeDocs, dailyReports, githubEvents);
 
         ChatAssistantService.ChatResult result = service.respond(
@@ -366,12 +461,20 @@ class ChatAssistantServiceTests {
             VectorStore dailyReports,
             VectorStore githubEvents) {
         ChatClient chatClient = mock(ChatClient.class, RETURNS_DEEP_STUBS);
-        ChatClient.Builder chatClientBuilder = mock(ChatClient.Builder.class);
+        ChatClient.Builder chatClientBuilder = createChatClientBuilder();
         when(chatClientBuilder.build()).thenReturn(chatClient);
         IntentClassifier intentClassifier = mock(IntentClassifier.class);
         when(intentClassifier.classify(any())).thenReturn(List.of(category));
         return new ChatAssistantService(
-                chatClientBuilder, intentClassifier, new InputSanitizer(),
+                chatClientBuilder, MessageWindowChatMemory.builder().build(),
+                intentClassifier, new InputSanitizer(),
                 knowledgeDocs, dailyReports, githubEvents);
+    }
+
+    private static ChatClient.Builder createChatClientBuilder() {
+        ChatClient.Builder builder = mock(ChatClient.Builder.class);
+        when(builder.defaultAdvisors(any(
+                org.springframework.ai.chat.client.advisor.api.Advisor[].class))).thenReturn(builder);
+        return builder;
     }
 }

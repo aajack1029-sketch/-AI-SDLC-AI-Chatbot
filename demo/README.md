@@ -91,12 +91,14 @@ npm run dev
 
 Vite 預設監聽 5173 埠，請開啟終端機顯示的前端網址（通常是 http://localhost:5173），輸入問題並按「送出」。前端會以 `POST` 呼叫 `http://localhost:8080/api/v1/chat/query`；Spring Boot 的 `ChatController` 已允許 `http://localhost:5173` 跨域存取。若瀏覽器使用不同的前端來源網址（例如 VS Code Port Forwarding 網址），請將該完整來源加入 `ChatController.java` 的 `@CrossOrigin`，不要使用 `*` 開放所有來源。
 
-聊天請求的 `filters` 為選填；一般問答不需要傳入，省略時會依問題意圖檢索相應資料。可用以下命令獨立驗證後端 API：
+聊天請求須附上已登入 Firebase 使用者的 ID Token；從驗證後的 JWT `sub` 取得使用者 UID，請勿在本文提供 UID 或 email。要延續同一段對話，請在每次請求沿用同一個 UUID `conversationId`。React UI 會自動產生並傳送；若省略，後端只建立單次請求的記憶 ID。`filters` 為選填；一般問答不需要傳入，省略時會依問題意圖檢索相應資料。可用以下命令獨立驗證後端 API：
 ```bash
+export FIREBASE_ID_TOKEN="由已登入的 Firebase 使用者取得的 ID Token"
 curl -X POST http://localhost:8080/api/v1/chat/query \
   -H 'Origin: http://localhost:5173' \
   -H 'Content-Type: application/json' \
-  -d '{"message":"測試機的 IP 是多少？","role":"DEVELOPER"}'
+  -H "Authorization: Bearer ${FIREBASE_ID_TOKEN}" \
+  -d '{"message":"測試機的 IP 是多少？","conversationId":"8df87c7e-41f0-4b6f-8ddd-b3447b58842c"}'
 ```
 
 成功時會取得包含 `answer`、`intent`、`intents` 與 `references` 欄位的 JSON 回應。`references` 會列出檢索來源的標籤、文件識別資訊，以及可用的來源 URL。`http://localhost:8080/` 並非前端頁面或聊天端點；請從 Vite 網址開啟 UI，並以 `POST /api/v1/chat/query` 呼叫聊天 API。
@@ -163,6 +165,8 @@ PowerShell 請以 `$env:GITHUB_SYNC_ENABLED="true"` 啟用排程，並在啟動 
 
 ## 文件與日報檢索優先級
 
+- **使用者識別與對話記憶**：聊天 API 只接受通過 Firebase JWT 驗證的請求；`ChatController` 從已驗證的 `Jwt` principal 讀取 `sub`（Firebase UID），不信任請求本文提供的 UID、email 或 `role`。React 每個登入者的分頁建立 UUID `conversationId`，後端以 `<Firebase UID>:<conversationId>` 作為記憶 key，隔離不同使用者與不同對話。後續訊息必須沿用同一個 `conversationId`；省略時只會建立單次請求的記憶 ID，不會延續上下文。
+- **記憶生命週期**：使用 `MessageWindowChatMemory` 保留最近 10 則訊息，儲存在應用程式記憶體，不需額外資料庫。重啟後記憶清空；目前不會跨分頁或瀏覽器重新整理保存 `conversationId`。
 - 權威專案文件由 `src/main/resources/Data/knowledge_docs.json` 載入 `department_knowledge_docs_gemini_embedding_001` collection。
 - 同仁日報由 `src/main/resources/Data/mock_daily_reports.json` 載入 `department_daily_reports_gemini_embedding_001` collection；每筆日報必須明確標記 `role_access` 為 `PUBLIC`、`DEVELOPER` 或 `MANAGER`，缺少或不合法的標籤會使匯入失敗。
 - 單一 `ENVIRONMENT_DOC` 問題只檢索權威文件；單一 `DAILY_STATUS` 問題只檢索日報；同時涉及兩者時會同時檢索；`GENERAL_CHAT` 不執行向量檢索。

@@ -1,22 +1,27 @@
 package com.example.demo;
 
 import com.google.genai.errors.ClientException;
+import org.mockito.Answers;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.retry.NonTransientAiException;
 import org.springframework.ai.retry.TransientAiException;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -29,8 +34,46 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ChatControllerTests {
 
     @Test
+    void forwardsConversationIdToAssistantService() throws Exception {
+        ChatAssistantService assistantService = mockChatAssistantService();
+        String conversationId = UUID.randomUUID().toString();
+        doReturn(new ChatAssistantService.ChatResult(
+                        IntentCategory.GENERAL_CHAT, "你上一個問題是「哪個 PR 修復登入問題？」。"))
+                .when(assistantService)
+                .respondForUser(
+                        "firebase-test-uid", conversationId, "我上個問題問甚麼", "DEVELOPER");
+
+        createMockMvc(assistantService).perform(post("/api/v1/chat/query")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"message":"我上個問題問甚麼","conversationId":"%s"}
+                                """.formatted(conversationId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.answer")
+                        .value("你上一個問題是「哪個 PR 修復登入問題？」。"));
+
+        verify(assistantService).respondForUser(
+                "firebase-test-uid", conversationId, "我上個問題問甚麼", "DEVELOPER");
+    }
+
+    @Test
+    void rejectsMalformedConversationIds() throws Exception {
+        ChatAssistantService assistantService = mockChatAssistantService();
+
+        createMockMvc(assistantService).perform(post("/api/v1/chat/query")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"message":"問題","conversationId":"not-a-uuid"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.answer").value("請提供有效的對話識別碼！"));
+
+        verifyNoInteractions(assistantService);
+    }
+
+    @Test
     void allowsCorsRequestsFromViteDevelopmentServer() throws Exception {
-        ChatAssistantService assistantService = mock(ChatAssistantService.class);
+        ChatAssistantService assistantService = mockChatAssistantService();
         when(assistantService.respond("問題", "DEVELOPER"))
                 .thenReturn(new ChatAssistantService.ChatResult(IntentCategory.DAILY_STATUS, "回答"));
 
@@ -45,7 +88,7 @@ class ChatControllerTests {
 
     @Test
     void rejectsCorsRequestsFromOtherOrigins() throws Exception {
-        ChatAssistantService assistantService = mock(ChatAssistantService.class);
+        ChatAssistantService assistantService = mockChatAssistantService();
 
         createMockMvc(assistantService).perform(post("/api/v1/chat/query")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -57,7 +100,7 @@ class ChatControllerTests {
 
     @Test
     void returnsChineseAnswerAsUtf8Json() throws Exception {
-        ChatAssistantService assistantService = mock(ChatAssistantService.class);
+        ChatAssistantService assistantService = mockChatAssistantService();
         when(assistantService.respond("問題", "DEVELOPER"))
                 .thenReturn(new ChatAssistantService.ChatResult(IntentCategory.DAILY_STATUS, "這是中文回答"));
         MockMvc mockMvc = createMockMvc(assistantService);
@@ -80,7 +123,7 @@ class ChatControllerTests {
 
     @Test
     void returnsAllClassifiedIntentsAlongsideThePrimaryIntent() throws Exception {
-        ChatAssistantService assistantService = mock(ChatAssistantService.class);
+        ChatAssistantService assistantService = mockChatAssistantService();
         when(assistantService.respond("測試機 IP 與日報", "DEVELOPER"))
                 .thenReturn(new ChatAssistantService.ChatResult(
                         List.of(IntentCategory.DAILY_STATUS, IntentCategory.ENVIRONMENT_DOC), "回答"));
@@ -96,7 +139,7 @@ class ChatControllerTests {
 
     @Test
     void returnsSourceReferencesAlongsideTheAnswer() throws Exception {
-        ChatAssistantService assistantService = mock(ChatAssistantService.class);
+        ChatAssistantService assistantService = mockChatAssistantService();
         when(assistantService.respond("Issue 內容", "DEVELOPER"))
                 .thenReturn(new ChatAssistantService.ChatResult(
                         List.of(IntentCategory.GITHUB_SDLC),
@@ -117,7 +160,7 @@ class ChatControllerTests {
 
     @Test
     void forwardsGitHubMetadataFilters() throws Exception {
-        ChatAssistantService assistantService = mock(ChatAssistantService.class);
+        ChatAssistantService assistantService = mockChatAssistantService();
         GitHubEventFilters filters = new GitHubEventFilters(
                 "pull_request", "example-org/example-repo", "alice", "merged", "bug", 42,
                 "issue_pr", "8");
@@ -141,7 +184,7 @@ class ChatControllerTests {
 
     @Test
     void ignoresUntrustedRoleSuppliedInRequestBody() throws Exception {
-        ChatAssistantService assistantService = mock(ChatAssistantService.class);
+        ChatAssistantService assistantService = mockChatAssistantService();
         when(assistantService.respond("問題", "DEVELOPER"))
                 .thenReturn(new ChatAssistantService.ChatResult(IntentCategory.DAILY_STATUS, "回答"));
 
@@ -155,7 +198,7 @@ class ChatControllerTests {
 
     @Test
     void rejectsNonPositiveGithubEventNumbers() throws Exception {
-        ChatAssistantService assistantService = mock(ChatAssistantService.class);
+        ChatAssistantService assistantService = mockChatAssistantService();
         createMockMvc(assistantService).perform(post("/api/v1/chat/query")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -167,7 +210,7 @@ class ChatControllerTests {
 
     @Test
     void deniesAdminRoleFromChatApi() throws Exception {
-        ChatAssistantService assistantService = mock(ChatAssistantService.class);
+        ChatAssistantService assistantService = mockChatAssistantService();
 
         createMockMvc(assistantService, "ROLE_ADMIN")
                 .perform(post("/api/v1/chat/query")
@@ -181,7 +224,7 @@ class ChatControllerTests {
 
     @Test
     void reportsTransientAiFailuresAsServiceUnavailable() throws Exception {
-        ChatAssistantService assistantService = mock(ChatAssistantService.class);
+        ChatAssistantService assistantService = mockChatAssistantService();
         when(assistantService.respond("問題", "DEVELOPER"))
                 .thenThrow(new TransientAiException("provider rate limit"));
 
@@ -196,7 +239,7 @@ class ChatControllerTests {
 
     @Test
     void detectsRateLimitsWrappedByNonTransientAiExceptions() throws Exception {
-        ChatAssistantService assistantService = mock(ChatAssistantService.class);
+        ChatAssistantService assistantService = mockChatAssistantService();
         HttpClientErrorException rateLimit = HttpClientErrorException.create(
                 HttpStatus.TOO_MANY_REQUESTS,
                 "Too Many Requests",
@@ -216,7 +259,7 @@ class ChatControllerTests {
 
     @Test
     void reportsGoogleGenAiQuotaFailuresAsServiceUnavailable() throws Exception {
-        ChatAssistantService assistantService = mock(ChatAssistantService.class);
+        ChatAssistantService assistantService = mockChatAssistantService();
         when(assistantService.respond("問題", "DEVELOPER"))
                 .thenThrow(new RuntimeException("Failed to generate content",
                         new ClientException(429, "RESOURCE_EXHAUSTED", "Daily quota exceeded")));
@@ -231,7 +274,7 @@ class ChatControllerTests {
 
     @Test
     void reportsUnexpectedFailuresWithoutReturningSuccessShapedResponses() throws Exception {
-        ChatAssistantService assistantService = mock(ChatAssistantService.class);
+        ChatAssistantService assistantService = mockChatAssistantService();
         when(assistantService.respond("問題", "DEVELOPER"))
                 .thenThrow(new IllegalStateException("unexpected failure"));
 
@@ -244,7 +287,7 @@ class ChatControllerTests {
 
     @Test
     void reportsGitHubMcpFailuresAsBadGateway() throws Exception {
-        ChatAssistantService assistantService = mock(ChatAssistantService.class);
+        ChatAssistantService assistantService = mockChatAssistantService();
         when(assistantService.respond("提交紀錄", "DEVELOPER"))
                 .thenThrow(new GitHubMcpException("MCP server unavailable"));
 
@@ -261,11 +304,36 @@ class ChatControllerTests {
     }
 
     private static MockMvc createMockMvc(ChatAssistantService assistantService, String role) {
+        Instant now = Instant.now();
+        Jwt jwt = Jwt.withTokenValue("test-token")
+                .header("alg", "RS256")
+                .subject("firebase-test-uid")
+                .issuedAt(now)
+                .expiresAt(now.plusSeconds(300))
+                .build();
         return MockMvcBuilders.standaloneSetup(new ChatController(assistantService))
-                .defaultRequest(post("/").principal(new UsernamePasswordAuthenticationToken(
-                        "test-user", "unused",
-                        List.of(new SimpleGrantedAuthority(role)))))
+                .defaultRequest(post("/").principal(new JwtAuthenticationToken(
+                        jwt, List.of(new SimpleGrantedAuthority(role)))))
                 .setControllerAdvice(new ChatApiExceptionHandler())
                 .build();
+    }
+
+    private static ChatAssistantService mockChatAssistantService() {
+        return mock(ChatAssistantService.class, invocation -> {
+            if (invocation.getMethod().getName().equals("respondForUser")) {
+                ChatAssistantService assistantService =
+                        (ChatAssistantService) invocation.getMock();
+                if (invocation.getArguments().length == 4) {
+                    return assistantService.respond(
+                            (String) invocation.getArgument(2),
+                            (String) invocation.getArgument(3));
+                }
+                return assistantService.respond(
+                        (String) invocation.getArgument(2),
+                        (String) invocation.getArgument(3),
+                        (GitHubEventFilters) invocation.getArgument(4));
+            }
+            return Answers.RETURNS_DEFAULTS.answer(invocation);
+        });
     }
 }

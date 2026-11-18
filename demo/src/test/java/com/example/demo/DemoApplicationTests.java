@@ -17,6 +17,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -91,16 +92,21 @@ class DemoApplicationTests {
 				.claim("roles", List.of("DEVELOPER"))
 				.build();
 		when(jwtDecoder.decode("verified-token")).thenReturn(jwt);
-		when(chatAssistantService.respond("問題", "DEVELOPER"))
+		String conversationId = UUID.randomUUID().toString();
+		when(chatAssistantService.respondForUser(
+				"developer-user", conversationId, "問題", "DEVELOPER"))
 				.thenReturn(new ChatAssistantService.ChatResult(IntentCategory.DAILY_STATUS, "回答"));
 
 		mockMvc.perform(post("/api/v1/chat/query")
 						.header("Authorization", "Bearer verified-token")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content("{\"message\":\"問題\",\"role\":\"MANAGER\"}"))
+						.content("""
+								{"message":"問題","role":"MANAGER","conversationId":"%s"}
+								""".formatted(conversationId)))
 				.andExpect(status().isOk());
 
-		verify(chatAssistantService).respond("問題", "DEVELOPER");
+		verify(chatAssistantService).respondForUser(
+				"developer-user", conversationId, "問題", "DEVELOPER");
 	}
 
 	@Test

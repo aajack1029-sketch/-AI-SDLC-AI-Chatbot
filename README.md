@@ -138,19 +138,23 @@ npm run dev
 
 開啟 Vite 顯示的網址，預設為 <http://localhost:5173/>。`dev` 指令會使用 `--host 0.0.0.0`，以支援容器或遠端開發環境的連接埠轉發；在 VS Code Dev Containers 中，若本機瀏覽器無法連線，請確認 Ports 面板已轉發 `5173`。
 
-聊天介面會將問題以 `POST` 傳送至 `http://localhost:8080/api/v1/chat/query`。介面可切換 `DEVELOPER`、`DEVOPS` 與 `MANAGER` 角色，也提供環境文件、工作日報及 GitHub Issue 的快速情境；GitHub 情境會附帶 `filters`，其他情境依問題意圖檢索。
+聊天介面會將問題以 `POST` 傳送至 `http://localhost:8080/api/v1/chat/query`，並附上 Firebase ID Token 與每個分頁、每位登入者各自的 `conversationId`。介面可切換已授權的角色，也提供環境文件、工作日報及 GitHub Issue 的快速情境；GitHub 情境會附帶 `filters`，其他情境依問題意圖檢索。
 
 ### 3. 確認 API
 
 聊天 API 僅接受 `POST`。例如：
 
 ```bash
+export FIREBASE_ID_TOKEN="由已登入的 Firebase 使用者取得的 ID Token"
 curl -X POST http://localhost:8080/api/v1/chat/query \
   -H 'Content-Type: application/json' \
-  -d '{"message":"測試機 IP 是多少？","role":"DEVELOPER"}'
+  -H "Authorization: Bearer ${FIREBASE_ID_TOKEN}" \
+  -d '{"message":"測試機 IP 是多少？","conversationId":"8df87c7e-41f0-4b6f-8ddd-b3447b58842c"}'
 ```
 
-成功時會回傳 `answer`、主要意圖 `intent`、完整意圖清單 `intents` 與檢索來源 `references`（來源標籤、實際文件標題與編號、日報編號，以及可用的 URL）。回答內部資料時也會列出 Context 中支持答案的來源識別碼，例如權威文件 `DOC-ENV-TEST-SERVER-001` 或日報 `REP-20261006-01`；聊天訊息下方會顯示對應來源。不要以瀏覽器直接開啟 `/api/v1/chat/query` 測試，因為瀏覽器網址列會送出 `GET`；也不要期待後端根網址 `http://localhost:8080/` 顯示 React 頁面，前端和後端是分開啟動的服務。
+後端會驗證 Firebase ID Token 的簽章、issuer、audience 與角色，並從已驗證 JWT 的 `sub` 取得 Firebase UID；不使用請求本文的 `role`、email 或自行解析未驗證的 Token 作為身分。對話記憶 key 由 Firebase UID 與 `conversationId` 組成，因此不同使用者即使提交相同 UUID，也不會共用記憶。`conversationId` 應在同一段對話的後續請求中保持不變；React UI 會在每個登入者的分頁建立 UUID。若省略 ID，後端會建立單次請求專用的 ID，不會延續前文。
+
+聊天記憶使用 Spring AI `MessageWindowChatMemory`，只保留最近 10 則訊息並存於後端記憶體；後端重啟後記憶會清除，且目前不跨分頁或瀏覽器重新整理保存 ID。成功時會回傳 `answer`、主要意圖 `intent`、完整意圖清單 `intents` 與檢索來源 `references`（來源標籤、實際文件標題與編號、日報編號，以及可用的 URL）。回答內部資料時也會列出 Context 中支持答案的來源識別碼，例如權威文件 `DOC-ENV-TEST-SERVER-001` 或日報 `REP-20261006-01`；聊天訊息下方會顯示對應來源。不要以瀏覽器直接開啟 `/api/v1/chat/query` 測試，因為瀏覽器網址列會送出 `GET`；也不要期待後端根網址 `http://localhost:8080/` 顯示 React 頁面，前端和後端是分開啟動的服務。
 
 後端目前只允許 `http://localhost:5173` 跨來源存取。若前端改用其他 origin（包含不同 port），請同步更新 `ChatController` 的 `@CrossOrigin` 設定。
 

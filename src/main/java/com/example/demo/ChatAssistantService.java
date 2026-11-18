@@ -1,9 +1,12 @@
 package com.example.demo;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import com.example.demo.security.InputSanitizer;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,13 +18,25 @@ public class ChatAssistantService {
 
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
+    private final InputSanitizer inputSanitizer;
 
-    public ChatAssistantService(ChatClient.Builder chatClientBuilder, VectorStore vectorStore) {
-        this.chatClient = chatClientBuilder.build();
+    public ChatAssistantService(
+            ChatClient.Builder chatClientBuilder,
+            ChatMemory chatMemory,
+            VectorStore vectorStore,
+            InputSanitizer inputSanitizer) {
+        this.chatClient = chatClientBuilder
+                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+                .build();
         this.vectorStore = vectorStore;
+        this.inputSanitizer = inputSanitizer;
     }
 
-    public String askAssistant(String userQuery, String userRole) {
+    public String askAssistant(String conversationId, String userQuery, String userRole) {
+        if (inputSanitizer.containsPromptInjection(userQuery)) {
+            return "【安全警告】您的輸入包含敏感指令或未授權的 Prompt 操作，系統已攔截請求。";
+        }
+
         // 1. 從 Qdrant 檢索最相關的 3 筆 Context
         // 開發除錯階段建議將 similarityThreshold 調低（如 0.2），避免因為分數差距導致搜不到資料
         SearchRequest searchRequest = SearchRequest.builder()
@@ -60,6 +75,7 @@ public class ChatAssistantService {
         return chatClient.prompt()
                 .system(systemPrompt)
                 .user(userQuery)
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .call()
                 .content();
     }

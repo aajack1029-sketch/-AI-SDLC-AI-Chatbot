@@ -60,6 +60,7 @@ function App() {
   const [currentRole, setCurrentRole] = useState<Role>('DEVELOPER')
   const isComposing = useRef(false)
   const compositionEndedAt = useRef(0)
+  const conversationIds = useRef(new Map<string, string>())
   const selectedRole = allowedRoles.includes(currentRole)
     ? currentRole
     : allowedRoles[0]
@@ -114,6 +115,7 @@ function App() {
     setAuthError('')
     try {
       await signOut(auth)
+      if (user) conversationIds.current.delete(user.uid)
       setMessages([])
     } catch (error) {
       console.error('Firebase 登出失敗:', error)
@@ -156,8 +158,16 @@ function App() {
     setLoading(true)
 
     try {
-      const requestBody: { message: string; filters?: GitHubEventFilters } = {
+      const conversationId =
+        conversationIds.current.get(user.uid) ?? crypto.randomUUID()
+      conversationIds.current.set(user.uid, conversationId)
+      const requestBody: {
+        message: string
+        conversationId: string
+        filters?: GitHubEventFilters
+      } = {
         message: currentInput,
+        conversationId,
       }
       if (filters) requestBody.filters = filters
       const apiUrl =
