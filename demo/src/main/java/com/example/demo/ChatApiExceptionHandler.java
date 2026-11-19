@@ -27,7 +27,8 @@ public class ChatApiExceptionHandler {
         logger.warn("Access denied for chat request: {}", exception.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .contentType(MediaType.parseMediaType("application/json;charset=UTF-8"))
-                .body(new ChatController.ChatResponse("此帳號沒有聊天 API 權限。"));
+                .body(new ChatController.ChatResponse(
+                        ChatStatus.RBAC_DENIED, "此帳號沒有聊天 API 權限。"));
     }
 
     @ExceptionHandler(Exception.class)
@@ -41,7 +42,7 @@ public class ChatApiExceptionHandler {
 
         return ResponseEntity.status(status)
                 .contentType(MediaType.parseMediaType("application/json;charset=UTF-8"))
-                .body(new ChatController.ChatResponse(message));
+                .body(new ChatController.ChatResponse(ChatStatus.ERROR, message));
     }
 
     private static HttpStatus resolveStatus(Throwable exception) {

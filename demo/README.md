@@ -103,6 +103,8 @@ curl -X POST http://localhost:8080/api/v1/chat/query \
 
 成功時會取得包含 `answer`、`intent`、`intents` 與 `references` 欄位的 JSON 回應。`references` 會列出檢索來源的標籤、文件識別資訊，以及可用的來源 URL。`http://localhost:8080/` 並非前端頁面或聊天端點；請從 Vite 網址開啟 UI，並以 `POST /api/v1/chat/query` 呼叫聊天 API。
 
+聊天 API 回應包含 `status`。`SUCCESS` 表示正常處理，`GUARDRAIL_BLOCKED` 表示輸入遭安全防護攔截，`RBAC_DENIED` 表示權限不足，`VALIDATION_ERROR` 表示請求內容無效，`ERROR` 表示服務處理失敗。前端不應將缺少或未知的狀態視為成功。
+
 常見連線問題：
 - 瀏覽器無法開啟前端：確認 `npm run dev` 正在執行，使用終端機顯示的網址，並確認 VS Code 已轉發 5173 埠。
 - CORS 錯誤：確認前端頁面的來源與 `@CrossOrigin` 設定一致；若使用不同來源（含協定、網域或埠），需更新允許來源。

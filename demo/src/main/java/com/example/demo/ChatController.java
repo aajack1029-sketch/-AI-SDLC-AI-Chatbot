@@ -26,16 +26,19 @@ public class ChatController {
     public ResponseEntity<ChatResponse> query(
             @RequestBody ChatRequest request, Authentication authentication) {
         if (request == null || !StringUtils.hasText(request.message())) {
-            return ResponseEntity.badRequest().body(new ChatResponse("請輸入有效的提問內容！"));
+            return ResponseEntity.badRequest().body(new ChatResponse(
+                    ChatStatus.VALIDATION_ERROR, "請輸入有效的提問內容！"));
         }
         if (StringUtils.hasText(request.conversationId()) && !isValidConversationId(request.conversationId())) {
-            return ResponseEntity.badRequest().body(new ChatResponse("請提供有效的對話識別碼！"));
+            return ResponseEntity.badRequest().body(new ChatResponse(
+                    ChatStatus.VALIDATION_ERROR, "請提供有效的對話識別碼！"));
         }
 
         String role = resolveRole(authentication);
         if (request.filters() != null && request.filters().number() != null
                 && request.filters().number() < 1) {
-            return ResponseEntity.badRequest().body(new ChatResponse("GitHub 事件編號必須大於零。"));
+            return ResponseEntity.badRequest().body(new ChatResponse(
+                    ChatStatus.VALIDATION_ERROR, "GitHub 事件編號必須大於零。"));
         }
         String userId = resolveUserId(authentication);
         String conversationId = StringUtils.hasText(request.conversationId())
@@ -46,7 +49,7 @@ public class ChatController {
                 : chatAssistantService.respondForUser(
                         userId, conversationId, request.message(), role, request.filters());
         return ResponseEntity.ok(new ChatResponse(
-                result.answer(), result.intent(), result.intents(), result.references()));
+                result.status(), result.answer(), result.intent(), result.intents(), result.references()));
     }
 
     private static boolean isValidConversationId(String conversationId) {
@@ -89,20 +92,29 @@ public class ChatController {
     public record ChatRequest(String message, String role, GitHubEventFilters filters, String conversationId) {}
 
     public record ChatResponse(
+            ChatStatus status,
             String answer,
             IntentCategory intent,
             List<IntentCategory> intents,
             List<ChatAssistantService.ChatSource> references) {
-        public ChatResponse(String answer) {
-            this(answer, null, List.of(), List.of());
+        public ChatResponse {
+            if (status == null) {
+                throw new IllegalArgumentException("status must not be null");
+            }
+            if (answer == null) {
+                throw new IllegalArgumentException("answer must not be null");
+            }
+            intents = intents == null ? List.of() : List.copyOf(intents);
+            references = references == null ? List.of() : List.copyOf(references);
         }
 
-        public ChatResponse(String answer, IntentCategory intent) {
-            this(answer, intent, intent == null ? List.of() : List.of(intent), List.of());
+        public ChatResponse(ChatStatus status, String answer) {
+            this(status, answer, null, List.of(), List.of());
         }
 
-        public ChatResponse(String answer, IntentCategory intent, List<IntentCategory> intents) {
-            this(answer, intent, intents, List.of());
+        public ChatResponse(
+                ChatStatus status, String answer, IntentCategory intent, List<IntentCategory> intents) {
+            this(status, answer, intent, intents, List.of());
         }
     }
 }

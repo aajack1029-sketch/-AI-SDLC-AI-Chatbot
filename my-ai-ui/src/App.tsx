@@ -10,8 +10,15 @@ import {
   type User,
 } from 'firebase/auth'
 import { auth } from './firebase'
+import './App.css'
 
 type Role = 'DEVELOPER' | 'MANAGER' | 'ADMIN'
+type ChatStatus =
+  | 'SUCCESS'
+  | 'GUARDRAIL_BLOCKED'
+  | 'RBAC_DENIED'
+  | 'VALIDATION_ERROR'
+  | 'ERROR'
 
 interface ChatSource {
   label: string
@@ -22,6 +29,7 @@ interface ChatSource {
 interface Message {
   sender: 'user' | 'ai'
   text: string
+  status?: ChatStatus
   intent?: string | string[]
   references?: ChatSource[]
 }
@@ -37,13 +45,69 @@ interface QuickScenario {
 }
 
 interface ChatApiResponse {
+  status?: ChatStatus
   answer?: string
   reply?: string
   intent?: string | null
   intents?: string[]
+  sources?: string[] | null
   references?: (Partial<ChatSource> | string)[] | Partial<ChatSource> | string | null
   sourceUrls?: string[]
   source?: string | string[] | null
+}
+
+const chatStatusBadges: Record<
+  ChatStatus,
+  { icon: string; label: string; variant: 'safe' | 'warning' | 'danger' }
+> = {
+  SUCCESS: {
+    icon: '✅',
+    label: '已通過安全檢核與權限檢查',
+    variant: 'safe',
+  },
+  GUARDRAIL_BLOCKED: {
+    icon: '🛡️',
+    label: '資安 Guardrail 已攔截（Layer 1）',
+    variant: 'danger',
+  },
+  RBAC_DENIED: {
+    icon: '🔒',
+    label: 'RBAC 權限不足（Layer 2 資料隔離）',
+    variant: 'warning',
+  },
+  VALIDATION_ERROR: {
+    icon: '⚠️',
+    label: '輸入驗證未通過',
+    variant: 'warning',
+  },
+  ERROR: {
+    icon: '❌',
+    label: '系統處理失敗',
+    variant: 'danger',
+  },
+}
+
+function isChatStatus(status: unknown): status is ChatStatus {
+  return typeof status === 'string' &&
+    Object.prototype.hasOwnProperty.call(chatStatusBadges, status)
+}
+
+function renderSecurityBadge(status: ChatStatus) {
+  const badge = chatStatusBadges[status]
+  const isAlert = status === 'GUARDRAIL_BLOCKED' ||
+    status === 'RBAC_DENIED' ||
+    status === 'ERROR'
+
+  return (
+    <div
+      className={`security-badge badge-${badge.variant}`}
+      role={isAlert ? 'alert' : 'status'}
+      aria-label={`回覆狀態：${badge.label}`}
+    >
+      <span aria-hidden="true">{badge.icon}</span>
+      <span>{badge.label}</span>
+    </div>
+  )
 }
 
 function App() {
@@ -59,7 +123,7 @@ function App() {
   const [password, setPassword] = useState('')
   const [currentRole, setCurrentRole] = useState<Role>('DEVELOPER')
   const isComposing = useRef(false)
-  const compositionEndedAt = useRef(0)
+  const compositionEndTimeStamp = useRef<number | null>(null)
   const conversationIds = useRef(new Map<string, string>())
   const selectedRole = allowedRoles.includes(currentRole)
     ? currentRole
@@ -191,7 +255,10 @@ function App() {
       }
 
       const rawReferences =
-        response.data.references ?? response.data.sourceUrls ?? response.data.source
+        response.data.sources ??
+        response.data.references ??
+        response.data.sourceUrls ??
+        response.data.source
       const references = (Array.isArray(rawReferences)
         ? rawReferences
         : rawReferences
@@ -217,6 +284,7 @@ function App() {
       const aiMessage: Message = {
         sender: 'ai',
         text: response.data.answer || response.data.reply || '未收到有效回覆',
+        status: isChatStatus(response.data.status) ? response.data.status : undefined,
         intent: response.data.intents?.length
           ? response.data.intents
           : response.data.intent ?? undefined,
@@ -227,20 +295,31 @@ function App() {
     } catch (error) {
       const apiError = error instanceof AxiosError ? error : undefined
       const responseStatus = apiError?.response?.status
+      const errorData = apiError?.response?.data as ChatApiResponse | undefined
       console.error('聊天 API 呼叫失敗:', {
         status: responseStatus,
         authChallenge: apiError?.response?.headers['www-authenticate'],
       })
-      const errorMessage = responseStatus === 401
+      const errorMessage = typeof errorData?.answer === 'string'
+        ? errorData.answer
+        : responseStatus === 401
         ? '後端拒絕 Firebase ID Token。請確認後端的 Firebase 專案 ID、JWT issuer 與 JWKS 設定。'
         : responseStatus === 403
           ? '此帳號沒有聊天 API 權限，請確認 Firebase 使用者已設定 DEVELOPER 或 MANAGER 角色。'
           : '⚠️ 系統連線異常，請確認後端服務與 CORS 設定。'
+      const errorChatStatus = isChatStatus(errorData?.status)
+        ? errorData.status
+        : responseStatus === 403
+          ? 'RBAC_DENIED'
+          : responseStatus === 400
+            ? 'VALIDATION_ERROR'
+            : 'ERROR'
       setMessages((previous) => [
         ...previous,
         {
           sender: 'ai',
           text: errorMessage,
+          status: errorChatStatus,
         },
       ])
     } finally {
@@ -259,7 +338,10 @@ function App() {
 
     if (event.key === 'Enter') {
       event.preventDefault()
-      if (Date.now() - compositionEndedAt.current < 100) return
+      if (
+        compositionEndTimeStamp.current !== null &&
+        event.timeStamp - compositionEndTimeStamp.current < 100
+      ) return
       void handleSend()
     }
   }
@@ -446,35 +528,15 @@ function App() {
         {messages.map((message, index) => (
           <div
             key={index}
-            style={{
-              textAlign: message.sender === 'user' ? 'right' : 'left',
-              margin: '15px 0',
-            }}
+            className={`message-row ${message.sender}`}
           >
-            <div
-              style={{
-                display: 'inline-block',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                maxWidth: '75%',
-                textAlign: 'left',
-                background: message.sender === 'user' ? '#007bff' : '#ffffff',
-                color: message.sender === 'user' ? '#fff' : '#333',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                whiteSpace: message.sender === 'ai' ? 'pre-wrap' : 'normal',
-              }}
-            >
-              {message.text}
+            <div className={`message-bubble ${message.sender}`}>
+              {message.sender === 'ai' && message.status
+                ? renderSecurityBadge(message.status)
+                : null}
+              <p className="message-text">{message.text}</p>
               {message.sender === 'ai' && message.references?.length ? (
-                <div
-                  style={{
-                    marginTop: '9px',
-                    paddingTop: '8px',
-                    borderTop: '1px dashed #ddd',
-                    fontSize: '12px',
-                    color: '#287a48',
-                  }}
-                >
+                <div className="message-sources">
                   <strong>📍 資料來源</strong>
                   <div
                     style={{
@@ -520,7 +582,7 @@ function App() {
                 </div>
               ) : null}
             </div>
-            {message.intent && (
+            {message.intent && message.intent !== 'UNKNOWN' && (
               <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
                 🏷️ 辨識意圖:{' '}
                 {typeof message.intent === 'object'
@@ -542,11 +604,11 @@ function App() {
           onChange={(event) => setInput(event.target.value)}
           onCompositionStart={() => {
             isComposing.current = true
-            compositionEndedAt.current = 0
+            compositionEndTimeStamp.current = null
           }}
-          onCompositionEnd={() => {
+          onCompositionEnd={(event) => {
             isComposing.current = false
-            compositionEndedAt.current = Date.now()
+            compositionEndTimeStamp.current = event.timeStamp
           }}
           onKeyDown={handleKeyDown}
           placeholder="請輸入問題（例如：測試機 IP 是多少？今日部署進度？）"

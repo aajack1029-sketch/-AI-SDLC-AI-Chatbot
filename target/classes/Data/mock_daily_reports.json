@@ -10,7 +10,8 @@
       "配置 Tailwind CSS 與 Shadcn UI 組件庫"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "繪製 Chatbot 對話視窗的主體版型"
+    "tomorrow_plan": "繪製 Chatbot 對話視窗的主體版型",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260914-02",
@@ -23,7 +24,8 @@
       "安裝 Docker Engine v26.0 與 Docker Compose"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "部署 Qdrant 向量資料庫（Vector DB）"
+    "tomorrow_plan": "部署 Qdrant 向量資料庫（Vector DB）",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260914-03",
@@ -36,7 +38,8 @@
       "引入 Spring Security 與 JWT 基礎依賴套件"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "設計使用者登入與 Token 簽發 API"
+    "tomorrow_plan": "設計使用者登入與 Token 簽發 API",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260914-04",
@@ -49,7 +52,8 @@
       "撰寫部門開發者安全編碼規範手冊 (DevSecOps SOP)"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "審核 Spring Boot 後端 API 權限設計案"
+    "tomorrow_plan": "審核 Spring Boot 後端 API 權限設計案",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260914-05",
@@ -62,7 +66,8 @@
       "撰寫文字分塊（Chunking）測試腳本，試用 RecursiveCharacterTextSplitter"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "測試不同 Chunk Size (250 vs 500) 對檢索精確度的影響"
+    "tomorrow_plan": "測試不同 Chunk Size (250 vs 500) 對檢索精確度的影響",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260918-01",
@@ -75,7 +80,8 @@
       "新增對話歷史清單側邊欄 UI"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "整合 WebSocket 以實現流式輸出（Streaming Response）"
+    "tomorrow_plan": "整合 WebSocket 以實現流式輸出（Streaming Response）",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260918-02",
@@ -88,7 +94,8 @@
       "建立首個 Collection `department_daily_reports`"
     ],
     "issues_and_blockers": "預設 6333 Port 衝突，已重定向至 6334 Port",
-    "tomorrow_plan": "協助李哲宇寫入首批測試向量數據"
+    "tomorrow_plan": "協助李哲宇寫入首批測試向量數據",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260918-03",
@@ -101,7 +108,8 @@
       "定義統一 API 回傳格式（ApiResponse DTO）"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "對接 Qdrant Java SDK 進行向量檢索測試"
+    "tomorrow_plan": "對接 Qdrant Java SDK 進行向量檢索測試",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260918-04",
@@ -114,7 +122,8 @@
       "收集 10 組常見的 Prompt Injection 越獄攻擊語句"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "設計後端 Prompt 驗證濾網 (Guardrails Engine)"
+    "tomorrow_plan": "設計後端 Prompt 驗證濾網 (Guardrails Engine)",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260918-05",
@@ -127,7 +136,8 @@
       "編寫數據清洗腳本，自動剔除日報中的特殊控制字元"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "建立日報寫入向量資料庫的自動化 Pipeline"
+    "tomorrow_plan": "建立日報寫入向量資料庫的自動化 Pipeline",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260923-01",
@@ -140,7 +150,8 @@
       "修正長文字回應時視窗未自動滾動到底部的 Bug #1008"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "設計角色權限切換提示 UI"
+    "tomorrow_plan": "設計角色權限切換提示 UI",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260923-02",
@@ -153,7 +164,8 @@
       "撰寫 Nginx 反向代理配置，支援 SSL 憑證簽發"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "協助黃雅婷設定靜態日報檔備份路徑"
+    "tomorrow_plan": "協助黃雅婷設定靜態日報檔備份路徑",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260923-03",
@@ -166,7 +178,8 @@
       "修復向量搜尋在 Null Metadata 時引發的 NPE 異常"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "整合 LangChain4j 進行 Prompt Template 組合"
+    "tomorrow_plan": "整合 LangChain4j 進行 Prompt Template 組合",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260923-04",
@@ -179,7 +192,8 @@
       "修復 Issue #1012：過度攔截正常技術單字 `systemctl` 的誤判問題"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "撰寫 RBAC 角色矩陣表格 (Developer, TeamLead, Manager)"
+    "tomorrow_plan": "撰寫 RBAC 角色矩陣表格 (Developer, TeamLead, Manager)",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260923-05",
@@ -192,7 +206,8 @@
       "測試「日期+工程師姓名」多重 Metadata 廣義過濾功能"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "測試 RAG 答案之 Faithfulness 忠實度分數"
+    "tomorrow_plan": "測試 RAG 答案之 Faithfulness 忠實度分數",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260928-01",
@@ -205,7 +220,8 @@
       "實作對話內容一鍵複製至剪貼簿功能"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "與張威廉討論認證 Token 失效重拉（RefreshToken）流程"
+    "tomorrow_plan": "與張威廉討論認證 Token 失效重拉（RefreshToken）流程",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260928-02",
@@ -218,7 +234,8 @@
       "完成測試環境 Kubernetes (k3s) 輕量化集群安裝"
     ],
     "issues_and_blockers": "測試機 CPU 負載過高，需優化 K3s 資源限制",
-    "tomorrow_plan": "調整 Pod 資源 Limit/Request 參數"
+    "tomorrow_plan": "調整 Pod 資源 Limit/Request 參數",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260928-03",
@@ -231,7 +248,8 @@
       "編寫意圖分類模組 (Intent Classifier) 初稿"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "進行意圖分類準確率測試"
+    "tomorrow_plan": "進行意圖分類準確率測試",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260928-04",
@@ -244,7 +262,8 @@
       "測試一般 Developer 角色嘗試呼叫績效 API 時成功回傳 403 Forbidden"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "檢視外發給 LLM 的 Prompt 是否包含敏感 API Key"
+    "tomorrow_plan": "檢視外發給 LLM 的 Prompt 是否包含敏感 API Key",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20260928-05",
@@ -257,7 +276,8 @@
       "目前模型答案關聯度（Answer Relevance）達 0.82"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "優化 Prompt 以提升小數點數值與特有名詞的精確度"
+    "tomorrow_plan": "優化 Prompt 以提升小數點數值與特有名詞的精確度",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261002-01",
@@ -270,7 +290,8 @@
       "增加請求中狀態的 Loading 禁用邏輯"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "準備專題簡報 UI 截圖展示"
+    "tomorrow_plan": "準備專題簡報 UI 截圖展示",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261002-02",
@@ -283,7 +304,8 @@
       "設置內部 DNS 映射 `test-env.internal.local`"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "撰寫測試機連線與權限申請 Docs"
+    "tomorrow_plan": "撰寫測試機連線與權限申請 Docs",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261002-03",
@@ -296,7 +318,8 @@
       "整合日報與內部文件的多路徑條件路由"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "進行 API 單元測試綜合覆蓋率報告"
+    "tomorrow_plan": "進行 API 單元測試綜合覆蓋率報告",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261002-04",
@@ -309,7 +332,8 @@
       "對後端做安全掃描，零 High 風險漏洞"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "擴充 Prompt Injection 越獄測試集至 20 組"
+    "tomorrow_plan": "擴充 Prompt Injection 越獄測試集至 20 組",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261002-05",
@@ -322,7 +346,8 @@
       "驗證專案停滯警示的關鍵字識別規則"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "準備假數據灌入準備作業"
+    "tomorrow_plan": "準備假數據灌入準備作業",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261005-01",
@@ -335,7 +360,8 @@
       "修復 Bug #1024：前端對話視窗在中斷網路時未顯示提示訊息"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "進行與 Java 後端 API 的端點對接測試"
+    "tomorrow_plan": "進行與 Java 後端 API 的端點對接測試",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261005-02",
@@ -348,7 +374,8 @@
       "部署 Docker 容器化資料庫（ChromaDB 向量資料庫）"
     ],
     "issues_and_blockers": "測試機記憶體不足，目前已調整 Swappiness 參數暫時緩解",
-    "tomorrow_plan": "協助張威廉架設 GitHub MCP 伺服器之測試網域"
+    "tomorrow_plan": "協助張威廉架設 GitHub MCP 伺服器之測試網域",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261005-03",
@@ -361,7 +388,8 @@
       "實作初步輸入過濾驗證功能"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "開發意圖分類（Intent Classifier）模組"
+    "tomorrow_plan": "開發意圖分類（Intent Classifier）模組",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261005-04",
@@ -374,7 +402,8 @@
       "更新 Prompt Injection 測試案例庫共 20 組"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "設計 RBAC 角色對映邏輯"
+    "tomorrow_plan": "設計 RBAC 角色對映邏輯",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261005-05",
@@ -387,7 +416,8 @@
       "測試單次批量寫入 100 筆資料之處理時間 (<3 秒)"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "協助團隊將假工作日報灌入向量資料庫"
+    "tomorrow_plan": "協助團隊將假工作日報灌入向量資料庫",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261006-01",
@@ -400,7 +430,8 @@
       "優化對話框捲動效能"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "請假（預計去 A 客戶端做實體環境建置與系統展示）"
+    "tomorrow_plan": "請假（預計去 A 客戶端做實體環境建置與系統展示）",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261006-02",
@@ -413,7 +444,8 @@
       "設定防火牆 Rule：開放 8080 與 5432 Port"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "進行 GCP 雲端成本盤點"
+    "tomorrow_plan": "進行 GCP 雲端成本盤點",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261006-03",
@@ -426,7 +458,8 @@
       "修復 Issue #1055：Token 效期過期導致的 500 錯誤"
     ],
     "issues_and_blockers": "OpenAI API Response Time 偶爾過長 (>2s)",
-    "tomorrow_plan": "加入意圖分類快取（Cache）機制"
+    "tomorrow_plan": "加入意圖分類快取（Cache）機制",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261006-04",
@@ -439,7 +472,8 @@
       "編寫資安合規文件初稿"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "審核測試機 192.168.1.105 之存取權限紀錄"
+    "tomorrow_plan": "審核測試機 192.168.1.105 之存取權限紀錄",
+    "role_access": "MANAGER"
   },
   {
     "report_id": "REP-20261006-05",
@@ -452,7 +486,8 @@
       "有效減少無關文字造成的背景雜訊問題"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "驗證日報檢索之 Precision 與 Recall 指標"
+    "tomorrow_plan": "驗證日報檢索之 Precision 與 Recall 指標",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261007-01",
@@ -465,7 +500,8 @@
       "完成客戶端防火牆與代理伺服器（Proxy）設定"
     ],
     "issues_and_blockers": "客戶現場網路無法連外，需完全使用離線模式運行",
-    "tomorrow_plan": "返回公司進行展示回饋彙整"
+    "tomorrow_plan": "返回公司進行展示回饋彙整",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261007-02",
@@ -478,7 +514,8 @@
       "關閉不必要的 VM，預計每月節省 $300 USD"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "維護內部 DevDocs 伺服器文件"
+    "tomorrow_plan": "維護內部 DevDocs 伺服器文件",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261007-03",
@@ -491,7 +528,8 @@
       "完成 RAG 向量資料庫檢索邏輯，可精確撈取工程師日報"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "測試多條件組合查詢（依作者+日期查詢）"
+    "tomorrow_plan": "測試多條件組合查詢（依作者+日期查詢）",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261007-04",
@@ -504,7 +542,8 @@
       "撰寫資安 Guardrails 輸入濾網功能"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "進行越獄（Jailbreak）指令測試"
+    "tomorrow_plan": "進行越獄（Jailbreak）指令測試",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261007-05",
@@ -517,7 +556,8 @@
       "自動化評估 RAG 檢索精確度達 86.6%"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "優化跨表查詢與多天日報彙整之 Prompt"
+    "tomorrow_plan": "優化跨表查詢與多天日報彙整之 Prompt",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261012-01",
@@ -530,7 +570,8 @@
       "開始開發模組化對話歷史紀錄清單"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "重構對話組件邏輯"
+    "tomorrow_plan": "重構對話組件邏輯",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261012-02",
@@ -543,7 +584,8 @@
       "備份 ChromaDB 向量資料庫快照"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "研讀 GitHub MCP SDK 串接規範"
+    "tomorrow_plan": "研讀 GitHub MCP SDK 串接規範",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261012-03",
@@ -556,7 +598,8 @@
       "編寫與 LLM 整合之 Prompt Template"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "進行 API 壓力測試"
+    "tomorrow_plan": "進行 API 壓力測試",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261012-04",
@@ -569,7 +612,8 @@
       "更新敏感關鍵詞清單（包含 AWS_SECRET_KEY, PASSWORD）"
     ],
     "issues_and_blockers": "有 2 組變體語句未被精確識別",
-    "tomorrow_plan": "優化正則表達式與意圖過濾模型"
+    "tomorrow_plan": "優化正則表達式與意圖過濾模型",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261012-05",
@@ -582,7 +626,8 @@
       "驗證主管查詢「本月專案進度是否停滯」的自動比對邏輯"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "測試多 Agent 協同分工架構"
+    "tomorrow_plan": "測試多 Agent 協同分工架構",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261016-01",
@@ -595,7 +640,8 @@
       "完成兩週份量前端代碼 Lint 檢查"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "準備次週程式碼重構作業"
+    "tomorrow_plan": "準備次週程式碼重構作業",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261016-02",
@@ -608,7 +654,8 @@
       "確認可經由 API 撈取 GitHub Repository 中的 Open Issue 清單"
     ],
     "issues_and_blockers": "GitHub API Rate Limit 接近上限，需申請 Personal Access Token 擴充",
-    "tomorrow_plan": "向資安組申請專用 PAT"
+    "tomorrow_plan": "向資安組申請專用 PAT",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261016-03",
@@ -621,7 +668,8 @@
       "將 RAG 檢索回應時間優化至 1.2 秒以內"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "進行 10/28 PoC 展示預演準備"
+    "tomorrow_plan": "進行 10/28 PoC 展示預演準備",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261016-04",
@@ -634,7 +682,8 @@
       "完成主管級「績效分析」API 之權限稽核日報"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "整理本月資安報告"
+    "tomorrow_plan": "整理本月資安報告",
+    "role_access": "MANAGER"
   },
   {
     "report_id": "REP-20261016-05",
@@ -647,7 +696,8 @@
       "確認在 50 筆資料量下，RAG 檢索召回率 (Recall) 達 93.3%"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "配合後端張威廉進行 10/28 PoC 全流程 API 壓測"
+    "tomorrow_plan": "配合後端張威廉進行 10/28 PoC 全流程 API 壓測",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261019-01",
@@ -660,7 +710,8 @@
       "修復 Bug #1088：滾動條在特定解析度下出現雙重滾動條問題"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "進行 React 19 與 Server Actions 的邊界測試"
+    "tomorrow_plan": "進行 React 19 與 Server Actions 的邊界測試",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261019-02",
@@ -673,7 +724,8 @@
       "解決 GitHub API Rate Limit 限制問題"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "設定 Kubernetes 自動擴整 (HPA) 參數"
+    "tomorrow_plan": "設定 Kubernetes 自動擴整 (HPA) 參數",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261019-03",
@@ -686,7 +738,8 @@
       "完成預演系統穩定度報告"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "與李哲宇對接混合檢索權重調整參數"
+    "tomorrow_plan": "與李哲宇對接混合檢索權重調整參數",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261019-04",
@@ -699,7 +752,8 @@
       "更新資安合規性 Check List"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "進行邊緣越獄測試 (Jailbreak Edge Cases)"
+    "tomorrow_plan": "進行邊緣越獄測試 (Jailbreak Edge Cases)",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261019-05",
@@ -712,7 +766,8 @@
       "將 Top-3 召回精確度由 86.6% 提升至 91.2%"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "測試長文本截斷與 Token 計算成本"
+    "tomorrow_plan": "測試長文本截斷與 Token 計算成本",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261020-01",
@@ -725,7 +780,8 @@
       "協助林小華進行前端打包檔優化"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "進行 10/28 展示流程的前端介面最後確認"
+    "tomorrow_plan": "進行 10/28 展示流程的前端介面最後確認",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261020-02",
@@ -738,7 +794,8 @@
       "備份測試機 192.168.1.105 之完整系統 Snapshot"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "模擬網路斷線情境測試"
+    "tomorrow_plan": "模擬網路斷線情境測試",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261020-03",
@@ -751,7 +808,8 @@
       "修復 Issue #1092：併發請求時高機率引發 Connection Pool 耗盡"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "擴展 HikariCP 連線池數量至 30"
+    "tomorrow_plan": "擴展 HikariCP 連線池數量至 30",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261020-04",
@@ -764,7 +822,8 @@
       "編寫資安備忘錄"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "進行跨部門權限滲透測試"
+    "tomorrow_plan": "進行跨部門權限滲透測試",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261020-05",
@@ -777,7 +836,8 @@
       "降低 LLM 在遇到未記載問題時產生幻覺（Hallucination）的機率"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "進行邊界問題測試"
+    "tomorrow_plan": "進行邊界問題測試",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261021-01",
@@ -790,7 +850,8 @@
       "清理前端棄用程式碼"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "準備 10/28 PoC 簡報資料圖表"
+    "tomorrow_plan": "準備 10/28 PoC 簡報資料圖表",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261021-02",
@@ -803,7 +864,8 @@
       "修復 Nginx 重設產生的 502 Bad Gateway"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "協助張威廉壓測 API Gateway 吞吐量"
+    "tomorrow_plan": "協助張威廉壓測 API Gateway 吞吐量",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261021-03",
@@ -816,7 +878,8 @@
       "產出後端單元測試與覆蓋率報告 (Coverage: 88.5%)"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "預演 10/28 PoC 全流程 API 端點測試"
+    "tomorrow_plan": "預演 10/28 PoC 全流程 API 端點測試",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261021-04",
@@ -829,7 +892,8 @@
       "確認非授權角色無法存取 `REP-` 開頭以外的敏感日報欄位"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "準備專題資安防禦報告"
+    "tomorrow_plan": "準備專題資安防禦報告",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261021-05",
@@ -842,7 +906,8 @@
       "完成 RAGAS 檢索忠實度 (Faithfulness) 評估分數：0.94"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "彙整測試基準對比數據"
+    "tomorrow_plan": "彙整測試基準對比數據",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261022-01",
@@ -855,7 +920,8 @@
       "確認各 JSON Payload 回應格式皆符合專案規格"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "進行團隊內部 Mock Presentation"
+    "tomorrow_plan": "進行團隊內部 Mock Presentation",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261022-02",
@@ -868,7 +934,8 @@
       "備份 Docker 映像檔"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "巡檢伺服器硬體狀態"
+    "tomorrow_plan": "巡檢伺服器硬體狀態",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261022-03",
@@ -881,7 +948,8 @@
       "系統錯誤率由 1.5% 降至 0%"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "進行團隊 Mock Presentation"
+    "tomorrow_plan": "進行團隊 Mock Presentation",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261022-04",
@@ -894,7 +962,8 @@
       "產出資安驗收報告"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "參加團隊發表預演"
+    "tomorrow_plan": "參加團隊發表預演",
+    "role_access": "DEVELOPER"
   },
   {
     "report_id": "REP-20261022-05",
@@ -907,6 +976,7 @@
       "產出最終量化數據報表"
     ],
     "issues_and_blockers": "無",
-    "tomorrow_plan": "協助準備 10/28 展示投影片"
+    "tomorrow_plan": "協助準備 10/28 展示投影片",
+    "role_access": "DEVELOPER"
   }
 ]

@@ -45,6 +45,8 @@ $env:GEMINI_CHAT_MODEL="gemini-3.5-flash-lite"
 
 伺服器啟動成功後，預設監聽於 http://localhost:8080。
 
+日報檢索會先依已驗證的 Firebase 角色套用 `role_access` 篩選，再取最多 8 筆候選文件（相似度門檻 0.55）。開啟此權限篩選後，首次部署必須至少啟用一次 `APP_INGESTION_ENABLED=true`，將日報的存取標籤寫入 Qdrant；之後才可關閉匯入。DEVELOPER 可檢索 `DEVELOPER`／`PUBLIC` 日報，MANAGER 可檢索 `MANAGER`／`DEVELOPER`／`PUBLIC` 日報。
+
 步驟 3：執行 Ground Truth 基準測試 (Benchmark Test)
 開啟第二個 PowerShell 視窗，執行自動化評測腳本：
 【單題驗證 (TC-001)】
@@ -157,6 +159,8 @@ curl -X POST http://localhost:8080/api/v1/chat/query \
 聊天記憶使用 Spring AI `MessageWindowChatMemory`，只保留最近 10 則訊息並存於後端記憶體；後端重啟後記憶會清除，且目前不跨分頁或瀏覽器重新整理保存 ID。成功時會回傳 `answer`、主要意圖 `intent`、完整意圖清單 `intents` 與檢索來源 `references`（來源標籤、實際文件標題與編號、日報編號，以及可用的 URL）。回答內部資料時也會列出 Context 中支持答案的來源識別碼，例如權威文件 `DOC-ENV-TEST-SERVER-001` 或日報 `REP-20261006-01`；聊天訊息下方會顯示對應來源。不要以瀏覽器直接開啟 `/api/v1/chat/query` 測試，因為瀏覽器網址列會送出 `GET`；也不要期待後端根網址 `http://localhost:8080/` 顯示 React 頁面，前端和後端是分開啟動的服務。
 
 後端目前只允許 `http://localhost:5173` 跨來源存取。若前端改用其他 origin（包含不同 port），請同步更新 `ChatController` 的 `@CrossOrigin` 設定。
+
+聊天 API 回應包含 `status`。`SUCCESS` 表示正常處理，`GUARDRAIL_BLOCKED` 表示輸入遭安全防護攔截，`RBAC_DENIED` 表示權限不足，`VALIDATION_ERROR` 表示請求內容無效，`ERROR` 表示服務處理失敗。前端不應將缺少或未知的狀態視為成功。
 
 ## 驗證與測試
 

@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import com.example.demo.dto.ChatResponse;
 import com.google.genai.errors.ApiException;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -10,18 +11,57 @@ import org.springframework.ai.retry.TransientAiException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class ChatApiExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatApiExceptionHandler.class);
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ChatResponse> handleAccessDenied(AccessDeniedException exception) {
+        logger.warn("Chat request denied: {}", exception.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .contentType(MediaType.parseMediaType("application/json;charset=UTF-8"))
+                .body(new ChatResponse(
+                        ChatResponse.Status.RBAC_DENIED, "此帳號沒有聊天 API 權限。"));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ChatResponse> handleInvalidRequestBody(HttpMessageNotReadableException exception) {
+        return ResponseEntity.badRequest()
+                .contentType(MediaType.parseMediaType("application/json;charset=UTF-8"))
+                .body(new ChatResponse(ChatResponse.Status.VALIDATION_ERROR, "請提供有效的聊天請求內容。"));
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ChatResponse> handleResponseStatus(ResponseStatusException exception) {
+        boolean accessDenied = exception.getStatusCode().value() == HttpStatus.FORBIDDEN.value();
+        boolean invalidRequest = exception.getStatusCode().value() == HttpStatus.BAD_REQUEST.value();
+        if (accessDenied) {
+            logger.warn("Chat request denied: {}", exception.getReason());
+        }
+        ChatResponse.Status responseStatus = accessDenied
+                ? ChatResponse.Status.RBAC_DENIED
+                : invalidRequest ? ChatResponse.Status.VALIDATION_ERROR : ChatResponse.Status.ERROR;
+        String message = accessDenied
+                ? "您沒有使用此聊天服務的權限。"
+                : invalidRequest
+                ? "請提供有效的聊天請求內容。"
+                : "聊天請求處理失敗，請查看應用程式日誌。";
+        return ResponseEntity.status(exception.getStatusCode())
+                .contentType(MediaType.parseMediaType("application/json;charset=UTF-8"))
+                .body(new ChatResponse(responseStatus, message));
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ChatController.ChatResponse> handleChatException(Exception exception) {
+    public ResponseEntity<ChatResponse> handleChatException(Exception exception) {
         Throwable cause = findRootCause(exception);
         HttpStatus status = resolveStatus(exception);
         String message = resolveMessage(status);
@@ -31,7 +71,7 @@ public class ChatApiExceptionHandler {
 
         return ResponseEntity.status(status)
                 .contentType(MediaType.parseMediaType("application/json;charset=UTF-8"))
-                .body(new ChatController.ChatResponse(message));
+                .body(new ChatResponse(ChatResponse.Status.ERROR, message));
     }
 
     private static HttpStatus resolveStatus(Throwable exception) {

@@ -55,4 +55,23 @@ class VectorIngestionServiceTests {
                         .anyMatch(document -> "MANAGER"
                                 .equals(document.getMetadata().get("role_access")))));
     }
+
+    @Test
+    void marksManagerPerformanceAuditReportsAsManagerOnly() throws Exception {
+        VectorStore knowledgeDocsVectorStore = mock(VectorStore.class);
+        VectorStore dailyReportsVectorStore = mock(VectorStore.class);
+        VectorIngestionService service = new VectorIngestionService(
+                knowledgeDocsVectorStore, dailyReportsVectorStore, new ObjectMapper(), true, 0);
+
+        service.run();
+
+        verify(dailyReportsVectorStore, atLeastOnce()).add(argThat(documents ->
+                documents.stream().anyMatch(document ->
+                        "REP-20261006-04".equals(document.getMetadata().get("report_id"))
+                                && "MANAGER".equals(document.getMetadata().get("role_access")))));
+        verify(dailyReportsVectorStore, atLeastOnce()).add(argThat(documents ->
+                documents.stream().anyMatch(document ->
+                        "REP-20261016-04".equals(document.getMetadata().get("report_id"))
+                                && "MANAGER".equals(document.getMetadata().get("role_access")))));
+    }
 }
