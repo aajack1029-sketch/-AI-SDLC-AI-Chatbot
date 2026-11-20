@@ -61,6 +61,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/v1/chat/**").hasAnyRole("DEVELOPER", "MANAGER")
+                        .requestMatchers("/api/v1/reports/**").hasAnyRole("DEVELOPER", "MANAGER")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(resourceServer -> resourceServer
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
@@ -90,6 +91,7 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/v1/chat/**", configuration);
+        source.registerCorsConfiguration("/api/v1/reports/**", configuration);
         return source;
     }
 }

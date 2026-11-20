@@ -46,6 +46,7 @@ interface QuickScenario {
 
 interface ChatApiResponse {
   status?: ChatStatus
+  error?: string
   answer?: string
   reply?: string
   intent?: string | null
@@ -54,6 +55,20 @@ interface ChatApiResponse {
   references?: (Partial<ChatSource> | string)[] | Partial<ChatSource> | string | null
   sourceUrls?: string[]
   source?: string | string[] | null
+}
+
+interface ExtractedDailyReport {
+  reportId: string
+  author: string
+  date: string
+  roleAccess: Exclude<Role, 'ADMIN'>
+  ipAddress: string
+  summary: string
+}
+
+interface ReportIngestApiResponse {
+  status: 'INGESTED'
+  data: ExtractedDailyReport
 }
 
 const chatStatusBadges: Record<
@@ -67,7 +82,7 @@ const chatStatusBadges: Record<
   },
   GUARDRAIL_BLOCKED: {
     icon: '🛡️',
-    label: '資安 Guardrail 已攔截（Layer 1）',
+    label: '資安 Guardrail 觸發',
     variant: 'danger',
   },
   RBAC_DENIED: {
@@ -222,6 +237,54 @@ function App() {
     setLoading(true)
 
     try {
+      const reportCommand = /^新增日報\s*[:：]/u
+      const reportText = reportCommand.test(currentInput)
+        ? currentInput.replace(reportCommand, '').trim()
+        : null
+      const chatApiUrl =
+        import.meta.env.VITE_CHAT_API_URL ||
+        'http://localhost:8080/api/v1/chat/query'
+
+      if (reportText !== null) {
+        const reportApiUrl =
+          import.meta.env.VITE_REPORT_INGEST_API_URL ||
+          new URL(
+            '/api/v1/reports/ingest',
+            new URL(chatApiUrl, window.location.origin).origin,
+          ).toString()
+        const sendReport = (idToken: string) =>
+          axios.post<ReportIngestApiResponse>(
+            reportApiUrl,
+            { rawText: reportText },
+            { headers: { Authorization: `Bearer ${idToken}` } },
+          )
+
+        let response
+        try {
+          response = await sendReport(await getIdToken(user))
+        } catch (error) {
+          if (!(error instanceof AxiosError) || error.response?.status !== 401) {
+            throw error
+          }
+          response = await sendReport(await getIdToken(user, true))
+        }
+
+        if (!response.data?.data) {
+          throw new Error('日報 API 未回傳結構化提取結果。')
+        }
+
+        setMessages((previous) => [
+          ...previous,
+          {
+            sender: 'ai',
+            text: `日報已成功提取並寫入 Qdrant：\n${JSON.stringify(response.data.data, null, 2)}`,
+            status: 'SUCCESS',
+            intent: 'DAILY_REPORT_INGESTED',
+          },
+        ])
+        return
+      }
+
       const conversationId =
         conversationIds.current.get(user.uid) ?? crypto.randomUUID()
       conversationIds.current.set(user.uid, conversationId)
@@ -234,12 +297,9 @@ function App() {
         conversationId,
       }
       if (filters) requestBody.filters = filters
-      const apiUrl =
-        import.meta.env.VITE_CHAT_API_URL ||
-        'http://localhost:8080/api/v1/chat/query'
       const sendRequest = (idToken: string) =>
         axios.post<ChatApiResponse>(
-          apiUrl,
+          chatApiUrl,
           requestBody,
           { headers: { Authorization: `Bearer ${idToken}` } },
         )
@@ -300,8 +360,12 @@ function App() {
         status: responseStatus,
         authChallenge: apiError?.response?.headers['www-authenticate'],
       })
-      const errorMessage = typeof errorData?.answer === 'string'
+      const errorMessage = typeof errorData?.error === 'string'
+        ? errorData.error
+        : typeof errorData?.answer === 'string'
         ? errorData.answer
+        : error instanceof Error && !(error instanceof AxiosError)
+          ? error.message
         : responseStatus === 401
         ? '後端拒絕 Firebase ID Token。請確認後端的 Firebase 專案 ID、JWT issuer 與 JWKS 設定。'
         : responseStatus === 403
@@ -611,7 +675,7 @@ function App() {
             compositionEndTimeStamp.current = event.timeStamp
           }}
           onKeyDown={handleKeyDown}
-          placeholder="請輸入問題（例如：測試機 IP 是多少？今日部署進度？）"
+          placeholder="提問或輸入「新增日報：」後接日報內容"
           style={{
             flex: 1,
             padding: '10px',
