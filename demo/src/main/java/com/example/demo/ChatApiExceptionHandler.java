@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import com.example.demo.tools.GitHubIssueCreationException;
 import com.google.genai.errors.ApiException;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -35,7 +36,7 @@ public class ChatApiExceptionHandler {
     public ResponseEntity<ChatController.ChatResponse> handleChatException(Exception exception) {
         Throwable cause = findRootCause(exception);
         HttpStatus status = resolveStatus(exception);
-        String message = resolveMessage(status);
+        String message = resolveMessage(status, exception);
 
         logger.error("Chat request failed (rootCause={}): {}",
                 cause.getClass().getName(), cause.getMessage(), exception);
@@ -91,7 +92,14 @@ public class ChatApiExceptionHandler {
         return HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
-    private static String resolveMessage(HttpStatus status) {
+    private static String resolveMessage(HttpStatus status, Throwable exception) {
+        if (status == HttpStatus.BAD_GATEWAY) {
+            for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
+                if (cause instanceof GitHubIssueCreationException issueException) {
+                    return issueException.getMessage();
+                }
+            }
+        }
         if (status == HttpStatus.SERVICE_UNAVAILABLE) {
             return "AI 或向量資料服務目前暫時無法使用或受到限流，請稍後再試；若持續發生，請查看應用程式日誌。";
         }

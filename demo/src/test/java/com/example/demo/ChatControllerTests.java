@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import com.example.demo.tools.GitHubIssueCreationException;
 import com.google.genai.errors.ClientException;
 import org.mockito.Answers;
 import org.junit.jupiter.api.Test;
@@ -344,6 +345,22 @@ class ChatControllerTests {
                 .andExpect(status().isBadGateway())
                 .andExpect(jsonPath("$.answer").value(
                         "AI、向量資料或 GitHub MCP 服務回覆錯誤，請查看應用程式日誌。"));
+    }
+
+    @Test
+    void reportsSafeGitHubIssueCreationDiagnosis() throws Exception {
+        ChatAssistantService assistantService = mockChatAssistantService();
+        when(assistantService.respond("開立交接 Issue", "DEVELOPER"))
+                .thenThrow(new RuntimeException("Tool execution failed",
+                        new GitHubIssueCreationException(
+                                "GitHub Issues API returned HTTP 401. Check GITHUB_TOKEN and restart the backend.")));
+
+        createMockMvc(assistantService).perform(post("/api/v1/chat/query")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"message\":\"開立交接 Issue\",\"role\":\"DEVELOPER\"}"))
+                .andExpect(status().isBadGateway())
+                .andExpect(jsonPath("$.answer").value(
+                        "GitHub Issues API returned HTTP 401. Check GITHUB_TOKEN and restart the backend."));
     }
 
     private static MockMvc createMockMvc(ChatAssistantService assistantService) {

@@ -19,7 +19,7 @@ public class GitHubIssueCommentsClient {
     public GitHubIssueCommentsClient(
             RestClient.Builder restClientBuilder,
             ObjectMapper objectMapper,
-            @Value("${app.github.token:}") String token) {
+            @Value("${GITHUB_TOKEN:${app.github.token:}}") String token) {
         this.restClient = restClientBuilder.clone().baseUrl("https://api.github.com").build();
         this.objectMapper = objectMapper;
         this.token = token;
@@ -28,7 +28,7 @@ public class GitHubIssueCommentsClient {
     public JsonNode listIssueComments(String owner, String repository, int issueNumber, int pageSize) {
         if (!StringUtils.hasText(token)) {
             throw new GitHubMcpException(
-                    "GITHUB_PERSONAL_ACCESS_TOKEN is required to retrieve Issue comments");
+                    "GITHUB_TOKEN or GITHUB_PERSONAL_ACCESS_TOKEN is required to retrieve Issue comments");
         }
 
         String responseBody = restClient.get()

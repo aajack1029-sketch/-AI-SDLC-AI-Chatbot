@@ -22,7 +22,10 @@
 3. **GitHub MCP Client**：
    - Spring Boot 透過 `ProcessBuilder` 啟動 GitHub MCP Server，使用 stdio JSON-RPC 初始化並列出/呼叫 MCP Tools。
    - PAT 只透過子程序環境變數傳入；可定期透過 MCP 同步 Commit、PR、Issue 與討論留言至 `github_sdlc_events` collection，供聊天檢索。
-4. **自動化評測體系 (Automated Benchmark)**：
+4. **GitHub 交接工單工具**：
+   - `SdLcActionTools` 透過 GitHub Issues API 建立交接 Issue，要求明確確認，並回傳實際 Issue 編號與連結。
+   - 工具已掛載至 `ChatAssistantService` 的 `ChatClient`；只有使用者明確確認並提供接手人的 GitHub 使用者名稱時才會建立。
+5. **自動化評測體系 (Automated Benchmark)**：
    - 提供 PowerShell 自動化腳本，針對 Ground Truth 測試集與意圖分類準確率進行量化評測。
 
 ---
@@ -42,9 +45,8 @@ docker run -d --name qdrant-dev-v1-18 -p 6333:6333 -p 6334:6334 qdrant/qdrant:v1
 $env:GOOGLE_API_KEY="你的_GEMINI_API_KEY"
 $env:JWT_ISSUER_URI="你的_OIDC_issuer_URL"
 $env:FIREBASE_PROJECT_ID="你的_Firebase_project_ID"
-$env:GITHUB_PERSONAL_ACCESS_TOKEN="你的_GITHUB_PAT"
-$env:GITHUB_REPOSITORY_OWNER="你的_GITHUB_組織或帳號"
-$env:GITHUB_REPOSITORY_NAME="你的_REPOSITORY"
+$env:GITHUB_TOKEN="ghp_你的PersonalAccessToken"
+$env:GITHUB_REPO="aajack1029-sketch/-AI-SDLC-AI-Chatbot"
 .\mvnw.cmd spring-boot:run
 ```
 
@@ -53,13 +55,14 @@ $env:GITHUB_REPOSITORY_NAME="你的_REPOSITORY"
 $env:GOOGLE_API_KEY="你的_GEMINI_API_KEY"
 $env:JWT_ISSUER_URI="你的_OIDC_issuer_URL"
 $env:FIREBASE_PROJECT_ID="你的_Firebase_project_ID"
-$env:GITHUB_PERSONAL_ACCESS_TOKEN="你的_GITHUB_PAT"
-$env:GITHUB_REPOSITORY_OWNER="你的_GITHUB_組織或帳號"
-$env:GITHUB_REPOSITORY_NAME="你的_REPOSITORY"
+$env:GITHUB_TOKEN="ghp_你的PersonalAccessToken"
+$env:GITHUB_REPO="aajack1029-sketch/-AI-SDLC-AI-Chatbot"
 $env:APP_INGESTION_ENABLED="false"
 $env:GEMINI_CHAT_MODEL="gemini-3.5-flash-lite"
 .\mvnw.cmd spring-boot:run
 ```
+
+`GITHUB_TOKEN` 請使用具備目標 repository Issues 寫入權限的 PAT；請勿提交或分享真實 token。`GITHUB_REPO` 格式為 `owner/repository`。設定環境變數後，請在同一個 PowerShell 視窗啟動後端；若後端已在執行，需重新啟動才能讀取新值。
 
 預設聊天模型為 `gemini-3.5-flash-lite`。若需切換模型，可透過 `GEMINI_CHAT_MODEL` 環境變數指定其他支援的 Gemini 文字生成模型。
 
@@ -136,7 +139,9 @@ curl -X POST http://localhost:8080/api/v1/chat/query \
 ## GitHub MCP 設定
 
 - Node.js 與可執行的 `npx` 必須安裝在啟動 Spring Boot 的環境中。預設以 `npx -y @modelcontextprotocol/server-github` 啟動 MCP Server。
-- 設定 `GITHUB_PERSONAL_ACCESS_TOKEN`、`GITHUB_REPOSITORY_OWNER` 及 `GITHUB_REPOSITORY_NAME`。PAT 權限需符合目標 repository 的讀取需求，請勿將 token 寫入程式碼或提交至版本控制。
+- `SdLcActionTools` 支援以 `GITHUB_TOKEN` 和 `GITHUB_REPO`（`owner/repository`）建立交接 Issue；也可使用 `GITHUB_PERSONAL_ACCESS_TOKEN`、`GITHUB_REPOSITORY_OWNER` 及 `GITHUB_REPOSITORY_NAME` 舊設定。PAT 建立 Issue 需具備目標 repository 的 Issues 寫入權限。
+- `application.yml` 會將 `GITHUB_TOKEN` 映射至 `app.github.token`，將 `GITHUB_REPO` 映射至 `app.github.repo`。若 GitHub 回覆 HTTP 401，表示 API 未接受執行中後端實際送出的 token；請確認 token 值已在啟動後端的同一個 shell 設定且未被撤銷，然後重新啟動。Issue 寫入權限不足通常會回覆 HTTP 403，而非 401。
+- 若要啟用 GitHub MCP 事件同步，仍需設定 `GITHUB_REPOSITORY_OWNER` 及 `GITHUB_REPOSITORY_NAME`。請勿將 token 寫入程式碼或提交至版本控制。
 - `GITHUB_MCP_COMMAND` 與 `GITHUB_MCP_PACKAGE` 可分別覆寫啟動命令及 MCP 套件名稱。
 - 啟用自動同步：設定 `GITHUB_SYNC_ENABLED=true`。預設在啟動 15 秒後首次同步，之後每 15 分鐘同步一次；可用 `GITHUB_SYNC_INTERVAL_MS`（毫秒）調整頻率。同步需要 MCP 提供 `list_commits`、`list_pull_requests`、`list_issues` 與 PR 留言工具。若 MCP 沒有 Issue 留言工具，系統會以同一個 PAT 呼叫 GitHub REST API 讀取 Issue 留言；API 失敗會讓該輪同步失敗並記錄錯誤，不會靜默略過。
 - Commit、PR、Issue 及留言會以 repository 與 GitHub 原始 ID 產生穩定文件 ID；重複排程會更新同一筆 Qdrant point，而不新增重複文件。同步成功日誌會分別列出 Commit、PR、PR 留言、Issue、Issue 留言及總筆數，方便確認各類事件是否實際同步；失敗會記錄錯誤並在下個排程重試。

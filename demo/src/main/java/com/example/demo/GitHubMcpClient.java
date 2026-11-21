@@ -35,7 +35,7 @@ public class GitHubMcpClient {
             ObjectMapper objectMapper,
             @Value("${app.github.mcp.command:npx}") String command,
             @Value("${app.github.mcp.package:@modelcontextprotocol/server-github}") String packageName,
-            @Value("${app.github.token:}") String token) {
+            @Value("${GITHUB_TOKEN:${app.github.token:}}") String token) {
         this.objectMapper = objectMapper;
         this.command = command;
         this.packageName = packageName;
@@ -72,7 +72,8 @@ public class GitHubMcpClient {
         }
         closeProcess();
         if (!StringUtils.hasText(token)) {
-            throw new GitHubMcpException("GITHUB_PERSONAL_ACCESS_TOKEN is required for GitHub MCP requests");
+            throw new GitHubMcpException(
+                    "GITHUB_TOKEN or GITHUB_PERSONAL_ACCESS_TOKEN is required for GitHub MCP requests");
         }
         if (!StringUtils.hasText(command) || !StringUtils.hasText(packageName)) {
             throw new GitHubMcpException("GitHub MCP command and package must be configured");
