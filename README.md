@@ -111,6 +111,8 @@ cd demo
 export GOOGLE_API_KEY="你的_GEMINI_API_KEY"
 export FIREBASE_PROJECT_ID="sdlc-ai-chatbot-e017d"
 export JWT_ISSUER_URI="https://securetoken.google.com/${FIREBASE_PROJECT_ID}"
+export:GITHUB_TOKEN="你的真實PAT"
+export:GITHUB_REPO="aajack1029-sketch/-AI-SDLC-AI-Chatbot"
 ./mvnw spring-boot:run
 ```
 
@@ -121,6 +123,8 @@ cd demo
 $env:GOOGLE_API_KEY = "你的_GEMINI_API_KEY"
 $env:FIREBASE_PROJECT_ID = "sdlc-ai-chatbot-e017d"
 $env:JWT_ISSUER_URI = "https://securetoken.google.com/$env:FIREBASE_PROJECT_ID"
+$env:GITHUB_TOKEN="你的真實PAT"
+$env:GITHUB_REPO="aajack1029-sketch/-AI-SDLC-AI-Chatbot"
 .\mvnw.cmd spring-boot:run
 ```
 
