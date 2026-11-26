@@ -1,5 +1,6 @@
 package com.example.demo.tools;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpMethod;
@@ -36,7 +37,7 @@ class SdLcActionToolsTests {
                         {"number":42,"html_url":"https://github.com/example-org/example-repo/issues/42"}
                         """, MediaType.APPLICATION_JSON));
         SdLcActionTools tools = new SdLcActionTools(
-                        restClientBuilder, " test-token ", "", "", "example-org/example-repo");
+                        restClientBuilder, new ObjectMapper(), " test-token ", "", "", "example-org/example-repo");
 
         String result = tools.createHandoverTicket(true, "王小明", "alice", "完成交接文件");
 
@@ -51,7 +52,7 @@ class SdLcActionToolsTests {
         RestClient.Builder restClientBuilder = RestClient.builder();
         MockRestServiceServer server = MockRestServiceServer.bindTo(restClientBuilder).build();
         SdLcActionTools tools = new SdLcActionTools(
-                restClientBuilder, "test-token", "example-org", "example-repo", "");
+                restClientBuilder, new ObjectMapper(), "test-token", "example-org", "example-repo", "");
 
         assertThat(tools.createHandoverTicket(false, "王小明", "alice", "完成交接文件"))
                 .contains("尚未取得使用者明確確認");
@@ -61,7 +62,7 @@ class SdLcActionToolsTests {
     @Test
     void rejectsBlankIssueDetails() {
         SdLcActionTools tools = new SdLcActionTools(
-                RestClient.builder(), "test-token", "example-org", "example-repo", "");
+                RestClient.builder(), new ObjectMapper(), "test-token", "example-org", "example-repo", "");
 
         assertThat(tools.createHandoverTicket(true, "王小明", " ", "完成交接文件"))
                 .contains("請先提供接手人的 GitHub 使用者名稱");
@@ -70,7 +71,7 @@ class SdLcActionToolsTests {
     @Test
     void rejectsMalformedCombinedRepositorySetting() {
         assertThatThrownBy(() ->
-                new SdLcActionTools(RestClient.builder(), "test-token", "", "", "invalid-repository"))
+                new SdLcActionTools(RestClient.builder(), new ObjectMapper(), "test-token", "", "", "invalid-repository"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("owner/repository");
     }
@@ -84,14 +85,15 @@ class SdLcActionToolsTests {
                 .andExpect(header("Authorization", "Bearer secret-test-token"))
                 .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
         SdLcActionTools tools = new SdLcActionTools(
-                restClientBuilder, "secret-test-token", "example-org", "example-repo", "");
+                restClientBuilder, new ObjectMapper(), "secret-test-token", "example-org", "example-repo", "");
 
-        assertThatThrownBy(() ->
-                tools.createHandoverTicket(true, "王小明", "alice", "完成交接文件"))
-                .isInstanceOf(GitHubIssueCreationException.class)
-                .hasMessageContaining("HTTP 401")
-                .hasMessageContaining("GITHUB_TOKEN")
-                .hasMessageNotContaining("secret-test-token");
+        String result = tools.createHandoverTicket(true, "王小明", "alice", "完成交接文件");
+
+        assertThat(result)
+                .contains("\"status\":\"error\"")
+                .contains("HTTP 401")
+                .contains("GITHUB_TOKEN")
+                .doesNotContain("secret-test-token");
         server.verify();
     }
 }
