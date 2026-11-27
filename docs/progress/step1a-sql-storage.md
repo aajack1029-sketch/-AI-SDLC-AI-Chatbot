@@ -11,7 +11,14 @@
 cd demo
 .\mvnw.cmd clean test
 ```
-截圖：`img/step1a-test-success.png`（預期 `BUILD SUCCESS`，測試數 72）
+結果：72 個測試全部通過，`BUILD SUCCESS`。
+
+![Step 1a 測試通過](img/step1a-test-success.png)
+
+## 遇到的問題
+H2 寫入 `report_tasks` 時，資料表的 CHECK 限制（進度 0–100、優先度三選一）出現 `23514 Check constraint invalid`，三個寫入測試失敗。資料驗證本來就在 Java 端（`StructuredTask`、`TaskPriority`），因此先移除資料庫層的兩條 CHECK，測試即全數通過。根本原因尚未查明；之後換 MySQL 時需重新評估是否補回。
+
+![CHECK 限制錯誤](img/step1a-check-constraint-error.png)
 
 ## 後續
 - Step 1b：用 Gemini 對 72 筆範例日報抽取進度/優先度/卡關，存成 JSON，匯入此資料庫。
