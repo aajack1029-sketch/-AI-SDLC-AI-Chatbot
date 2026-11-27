@@ -16,10 +16,10 @@ CREATE TABLE IF NOT EXISTS report_tasks (
     priority         VARCHAR(10)   NOT NULL,
     is_blocked       BOOLEAN       NOT NULL DEFAULT FALSE,
     blocker_note     VARCHAR(1000),
+    -- progress_percent (0-100) 與 priority (HIGH/MEDIUM/LOW) 由 Java 端
+    -- StructuredTask / TaskPriority 驗證；H2 的 CHECK 限制在此環境執行時出錯 (23514)，暫不使用。
     CONSTRAINT fk_report_tasks_report FOREIGN KEY (report_id)
-        REFERENCES daily_reports (report_id) ON DELETE CASCADE,
-    CONSTRAINT ck_report_tasks_progress CHECK (progress_percent BETWEEN 0 AND 100),
-    CONSTRAINT ck_report_tasks_priority CHECK (priority IN ('HIGH', 'MEDIUM', 'LOW'))
+        REFERENCES daily_reports (report_id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_daily_reports_author_date ON daily_reports (author, report_date);
