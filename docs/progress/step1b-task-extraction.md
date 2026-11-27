@@ -24,7 +24,27 @@ $env:APP_INGESTION_ENABLED = "false"
 日誌會出現「SQL 統計 | 作者：任務 N 個，平均進度 X%，卡關 Y 個」。
 
 ## 測試
-`.\mvnw.cmd clean test`，截圖：`img/step1b-test-success.png`、`img/step1b-sql-stats.png`
+`.\mvnw.cmd clean test`：79 個測試全部通過。
+
+![Step 1b 測試通過](img/step1b-test-success.png)
+
+## 結果
+
+Gemini 抽取 72 筆日報，失敗 0 筆：
+
+![抽取完成](img/step1b-extraction-done.png)
+
+匯入 SQL 後共 215 個任務，每位作者的統計由 SQL `GROUP BY` 計算：
+
+![SQL 統計](img/step1b-sql-stats.png)
+
+> 補充：尚未產生 `mock_daily_tasks.json` 時啟動，匯入程式會略過並提示，屬預期行為：
+>
+> ![抽取前的提示](img/step1b-warn-before-extraction.png)
+
+## 觀察
+- 每份日報約為「2 個已完成 (100%) + 1 個明日計畫 (0%)」，因此各作者平均進度都落在 62–66%，**不適合直接當績效指標**（Step 4 需改用完成數、High 優先度解決數、卡關數）。
+- 前一天的「明日計畫」隔天會以「已完成」再出現，同一任務在 SQL 內有多筆，需要 Step 2 的語意去重與進度追蹤。
 
 ## 尚未做（1c）
 - 使用者在聊天視窗新增日報（`/api/v1/reports/ingest`）時，同步抽取任務並寫入 SQL。
