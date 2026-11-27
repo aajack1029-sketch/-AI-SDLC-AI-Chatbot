@@ -20,4 +20,4 @@ application.properties
 .DS_Store
 
 # H2 本機資料庫檔案
-data/
+/data/
