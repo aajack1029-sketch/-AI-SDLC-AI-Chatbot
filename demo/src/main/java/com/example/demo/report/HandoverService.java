@@ -22,7 +22,10 @@ import java.util.Set;
 public class HandoverService {
 
     static final int DEFAULT_WINDOW_DAYS = 14;
-    static final double DUPLICATE_SIMILARITY = 0.5;
+    static final double DUPLICATE_SIMILARITY = 0.8;
+    static final int MIN_CONTAINED_LENGTH = 6;
+    private static final List<String> LEADING_STATUS_VERBS =
+            List.of("已完成", "完成", "進行", "開始", "繼續", "持續", "初步", "預計");
 
     public enum SortBy { PRIORITY, PROGRESS }
 
@@ -150,14 +153,23 @@ public class HandoverService {
         return counts;
     }
 
-    /** 兩個任務名稱是否視為同一件事：去除空白標點後，以字元二連詞的 Jaccard 相似度判斷。 */
+    /**
+     * 兩個任務名稱是否視為同一件事。刻意保守：交接時漏掉任務比多顯示一個重複更糟。
+     * 去除空白標點與開頭的狀態動詞 (完成、進行、開始…) 後，符合下列任一條件才合併：
+     * 1. 完全相同；2. 較短的名稱 (至少 6 字) 完整包含在較長的名稱內；3. 字元二連詞 Jaccard 相似度 ≥ 0.8。
+     */
     static boolean similar(String a, String b) {
-        String x = normalize(a);
-        String y = normalize(b);
+        String x = core(a);
+        String y = core(b);
         if (x.isEmpty() || y.isEmpty()) {
             return false;
         }
         if (x.equals(y)) {
+            return true;
+        }
+        String shorter = x.length() <= y.length() ? x : y;
+        String longer = shorter == x ? y : x;
+        if (shorter.length() >= MIN_CONTAINED_LENGTH && longer.contains(shorter)) {
             return true;
         }
         Set<String> gramsX = bigrams(x);
@@ -169,8 +181,21 @@ public class HandoverService {
         return !union.isEmpty() && (double) intersection.size() / union.size() >= DUPLICATE_SIMILARITY;
     }
 
-    private static String normalize(String text) {
-        return text == null ? "" : text.toLowerCase(Locale.ROOT).replaceAll("[\\p{Punct}\\p{IsPunctuation}\\s]+", "");
+    private static String core(String text) {
+        String result = text == null
+                ? ""
+                : text.toLowerCase(Locale.ROOT).replaceAll("[\\p{Punct}\\p{IsPunctuation}\\s]+", "");
+        boolean stripped = true;
+        while (stripped) {
+            stripped = false;
+            for (String verb : LEADING_STATUS_VERBS) {
+                if (result.startsWith(verb) && result.length() > verb.length() + 1) {
+                    result = result.substring(verb.length());
+                    stripped = true;
+                }
+            }
+        }
+        return result;
     }
 
     private static Set<String> bigrams(String text) {

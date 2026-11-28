@@ -46,9 +46,20 @@ class HandoverServiceTests {
     }
 
     @Test
-    void similarNamesAreMergedButDifferentTasksAreNot() {
+    void sameWorkWithDifferentStatusVerbOrPrefixIsMerged() {
         assertThat(HandoverService.similar("部署 Qdrant 向量資料庫", "部署Qdrant向量資料庫")).isTrue();
-        assertThat(HandoverService.similar("完成 API 文件撰寫", "完成API文件")).isTrue();
+        assertThat(HandoverService.similar("進行 GCP 雲端成本盤點", "完成 GCP 雲端成本盤點")).isTrue();
+        assertThat(HandoverService.similar("請假至 A 客戶端做實體環境建置與系統展示", "實體環境建置與系統展示"))
+                .isTrue();
+    }
+
+    @Test
+    void differentTasksWithSimilarWordingAreNotMerged() {
+        assertThat(HandoverService.similar("低優先度進行中任務", "中優先度進行中任務")).isFalse();
+        assertThat(HandoverService.similar("搭建完成 GitHub MCP Server", "完成 GitHub MCP Server 權限設定"))
+                .isFalse();
+        assertThat(HandoverService.similar("更新 Prompt Injection 測試", "收集 Prompt Injection 越獄語句"))
+                .isFalse();
         assertThat(HandoverService.similar("部署 Qdrant 向量資料庫", "部署 Docker 環境")).isFalse();
         assertThat(HandoverService.similar("修正登入流程", "整理測試報告")).isFalse();
         assertThat(HandoverService.similar("", "任務")).isFalse();
@@ -71,18 +82,18 @@ class HandoverServiceTests {
     @Test
     void openTasksComeFirstThenSortedByPriorityOrProgress() {
         List<TaskRow> rows = List.of(
-                row("R1", "2026-10-01", "已完成的高優先度任務", 100, TaskPriority.HIGH, false, null),
-                row("R1", "2026-10-01", "低優先度進行中任務", 80, TaskPriority.LOW, false, null),
-                row("R1", "2026-10-01", "高優先度未開始任務", 0, TaskPriority.HIGH, false, null),
-                row("R1", "2026-10-01", "中優先度進行中任務", 20, TaskPriority.MEDIUM, false, null));
+                row("R1", "2026-10-01", "上線前的資安檢查", 100, TaskPriority.HIGH, false, null),
+                row("R1", "2026-10-01", "整理客戶需求文件", 80, TaskPriority.LOW, false, null),
+                row("R1", "2026-10-01", "修復付款漏洞", 0, TaskPriority.HIGH, false, null),
+                row("R1", "2026-10-01", "開發報表匯出功能", 20, TaskPriority.MEDIUM, false, null));
 
         HandoverSummary byPriority = HandoverService.build("a", null, null, rows, SortBy.PRIORITY);
         assertThat(byPriority.tasks()).extracting(HandoverTask::taskName).containsExactly(
-                "高優先度未開始任務", "中優先度進行中任務", "低優先度進行中任務", "已完成的高優先度任務");
+                "修復付款漏洞", "開發報表匯出功能", "整理客戶需求文件", "上線前的資安檢查");
 
         HandoverSummary byProgress = HandoverService.build("a", null, null, rows, SortBy.PROGRESS);
         assertThat(byProgress.tasks()).extracting(HandoverTask::taskName).containsExactly(
-                "高優先度未開始任務", "中優先度進行中任務", "低優先度進行中任務", "已完成的高優先度任務");
+                "修復付款漏洞", "開發報表匯出功能", "整理客戶需求文件", "上線前的資安檢查");
     }
 
     @Test
