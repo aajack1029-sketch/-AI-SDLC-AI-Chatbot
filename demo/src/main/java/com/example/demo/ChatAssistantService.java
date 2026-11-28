@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import com.example.demo.report.HandoverChatHandler;
+import com.example.demo.report.HandoverIntentRules;
 import com.example.demo.security.InputSanitizer;
 import com.example.demo.tools.SdLcActionTools;
 
@@ -131,7 +132,9 @@ public class ChatAssistantService {
             return respondToFilteredGitHubEvents(conversationId, userQuery, userRole, githubFilters);
         }
 
-        List<IntentCategory> intents = intentClassifier.classify(userQuery);
+        List<IntentCategory> intents = HandoverIntentRules.isHandoverSummaryRequest(userQuery)
+                ? List.of(IntentCategory.HANDOVER_SUMMARY)
+                : intentClassifier.classify(userQuery);
         if (isAwaitingHandoverConfirmation(conversationId)
                 && !intents.contains(IntentCategory.GENERAL_CHAT)) {
             intents = List.of(IntentCategory.GENERAL_CHAT);

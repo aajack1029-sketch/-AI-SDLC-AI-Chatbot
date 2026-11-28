@@ -698,6 +698,27 @@ class ChatAssistantServiceTests {
     }
 
     @Test
+    void handoverWordingSkipsTheLlmClassifierEvenWhenItWouldGuessWrong() {
+        ChatClient.Builder chatClientBuilder = createChatClientBuilder();
+        when(chatClientBuilder.build()).thenReturn(mock(ChatClient.class, RETURNS_DEEP_STUBS));
+        IntentClassifier intentClassifier = mock(IntentClassifier.class);
+        when(intentClassifier.classify(any())).thenReturn(List.of(IntentCategory.GENERAL_CHAT));
+        ChatAssistantService service = new ChatAssistantService(
+                chatClientBuilder, MessageWindowChatMemory.builder().build(), intentClassifier,
+                new InputSanitizer(), mock(VectorStore.class), mock(VectorStore.class),
+                mock(VectorStore.class), mock(SdLcActionTools.class));
+        HandoverChatHandler handler = mock(HandoverChatHandler.class);
+        when(handler.handle("幫我整理我的交接", "DEVELOPER")).thenReturn(
+                new HandoverChatHandler.Reply("【林小華 的交接摘要】", ChatStatus.SUCCESS));
+        service.setHandoverChatHandler(handler);
+
+        ChatAssistantService.ChatResult result = service.respond("幫我整理我的交接", "DEVELOPER");
+
+        assertThat(result.intents()).containsExactly(IntentCategory.HANDOVER_SUMMARY);
+        verifyNoInteractions(intentClassifier);
+    }
+
+    @Test
     void passesHandoverPermissionDenialThroughWithItsStatus() {
         VectorStore knowledgeDocs = mock(VectorStore.class);
         VectorStore dailyReports = mock(VectorStore.class);
