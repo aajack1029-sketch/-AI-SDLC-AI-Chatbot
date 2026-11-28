@@ -10,9 +10,12 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import com.example.demo.report.HandoverChatHandler;
+import com.example.demo.report.HandoverIntentRules;
 import com.example.demo.security.InputSanitizer;
 import com.example.demo.tools.SdLcActionTools;
 
@@ -53,6 +56,7 @@ public class ChatAssistantService {
     private final VectorStore knowledgeDocsVectorStore;
     private final VectorStore dailyReportsVectorStore;
     private final VectorStore githubEventsVectorStore;
+    private HandoverChatHandler handoverChatHandler;
 
     public ChatAssistantService(
             ChatClient.Builder chatClientBuilder,
@@ -74,6 +78,12 @@ public class ChatAssistantService {
         this.knowledgeDocsVectorStore = knowledgeDocsVectorStore;
         this.dailyReportsVectorStore = dailyReportsVectorStore;
         this.githubEventsVectorStore = githubEventsVectorStore;
+    }
+
+    /** 交接摘要由 SQL 統計；沒有注入時 (例如單元測試) 會退回一般日報檢索。 */
+    @Autowired(required = false)
+    public void setHandoverChatHandler(HandoverChatHandler handoverChatHandler) {
+        this.handoverChatHandler = handoverChatHandler;
     }
 
     public String askAssistant(String userQuery, String userRole) {
@@ -122,10 +132,22 @@ public class ChatAssistantService {
             return respondToFilteredGitHubEvents(conversationId, userQuery, userRole, githubFilters);
         }
 
-        List<IntentCategory> intents = intentClassifier.classify(userQuery);
+        List<IntentCategory> intents = HandoverIntentRules.isHandoverSummaryRequest(userQuery)
+                ? List.of(IntentCategory.HANDOVER_SUMMARY)
+                : intentClassifier.classify(userQuery);
         if (isAwaitingHandoverConfirmation(conversationId)
                 && !intents.contains(IntentCategory.GENERAL_CHAT)) {
             intents = List.of(IntentCategory.GENERAL_CHAT);
+        }
+        if (intents.contains(IntentCategory.HANDOVER_SUMMARY)) {
+            if (handoverChatHandler == null) {
+                intents = List.of(IntentCategory.DAILY_STATUS);
+            } else {
+                HandoverChatHandler.Reply reply = handoverChatHandler.handle(userQuery, userRole);
+                rememberTurn(conversationId, userQuery, reply.answer());
+                return new ChatResult(
+                        List.of(IntentCategory.HANDOVER_SUMMARY), reply.answer(), reply.status());
+            }
         }
         if (intents.contains(IntentCategory.GENERAL_CHAT)) {
             return new ChatResult(intents, chatClient.prompt()

@@ -16,6 +16,7 @@ public class LlmIntentClassifier implements IntentClassifier {
             ENVIRONMENT_DOC：詢問目前有效的環境配置、IP、部署方式、操作文件或 SOP。
             DAILY_STATUS：詢問同仁、專案、工作進度、日報、歷史事件或工作統計。
             GITHUB_SDLC：詢問 GitHub Commit、Pull Request、Issue、程式碼修復或討論紀錄。
+            HANDOVER_SUMMARY：要求整理某位同仁（或自己）的工作交接、待辦任務清單、未完成事項、任務完成狀況或進度總覽。
             GENERAL_CHAT：一般閒聊、常識或不需要部門內部資料的問題。
             若問題同時詢問日報/同仁工作紀錄及目前有效的環境配置，必須同時輸出 DAILY_STATUS, ENVIRONMENT_DOC。
             若問題詢問 GitHub Commit、Pull Request、Issue、程式碼修復或討論紀錄，使用 GITHUB_SDLC；若也明確詢問日報內容，可同時輸出 DAILY_STATUS, GITHUB_SDLC。
@@ -24,6 +25,8 @@ public class LlmIntentClassifier implements IntentClassifier {
             若使用者只是詢問一般工作建議、如何安排今日工作、提高工作效率等，且沒有要查詢資料庫中的歷史日報紀錄，
             一律分類為 GENERAL_CHAT；即使問題提到「工作」也不應分類為 DAILY_STATUS。
             即使問題提到內部環境，若只是在詢問日報中某人做過什麼，分類為 DAILY_STATUS。
+            詢問「某天或某份日報寫了什麼」仍是 DAILY_STATUS；只有要求「整理交接、列出待辦/未完成任務、統計任務狀態」才是 HANDOVER_SUMMARY。
+            HANDOVER_SUMMARY 只能單獨輸出，不可與其他類別並列。
             GENERAL_CHAT 只能單獨輸出，不可與其他類別並列。
             """;
 

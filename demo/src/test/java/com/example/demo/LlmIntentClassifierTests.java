@@ -18,6 +18,12 @@ class LlmIntentClassifierTests {
     }
 
     @Test
+    void parsesHandoverSummaryIntent() {
+        assertThat(LlmIntentClassifier.parseCategories("handover_summary"))
+                .containsExactly(IntentCategory.HANDOVER_SUMMARY);
+    }
+
+    @Test
     void rejectsEmptyOrUnsupportedClassifierOutput() {
         assertThatThrownBy(() -> LlmIntentClassifier.parseCategories(" "))
                 .isInstanceOf(IllegalStateException.class)
