@@ -10,6 +10,7 @@ import {
   type User,
 } from 'firebase/auth'
 import { auth } from './firebase'
+import HandoverPanel from './HandoverPanel'
 import './App.css'
 
 type Role = 'DEVELOPER' | 'MANAGER' | 'ADMIN'
@@ -124,6 +125,16 @@ function renderSecurityBadge(status: ChatStatus) {
     </div>
   )
 }
+
+const handoverApiUrl =
+  import.meta.env.VITE_HANDOVER_API_URL ||
+  new URL(
+    '/api/v1/handover/summary',
+    new URL(
+      import.meta.env.VITE_CHAT_API_URL || 'http://localhost:8080/api/v1/chat/query',
+      window.location.origin,
+    ).origin,
+  ).toString()
 
 function App() {
   const [input, setInput] = useState('')
@@ -277,7 +288,7 @@ function App() {
           ...previous,
           {
             sender: 'ai',
-            text: `日報已成功提取並寫入 Qdrant：\n${JSON.stringify(response.data.data, null, 2)}`,
+            text: `日報已成功提取並寫入 Qdrant，任務也已寫入統計資料庫（可按上方「重新整理」查看交接摘要）：\n${JSON.stringify(response.data.data, null, 2)}`,
             status: 'SUCCESS',
             intent: 'DAILY_REPORT_INGESTED',
           },
@@ -552,6 +563,13 @@ function App() {
         </button>
       </div>
       {authError && <p role="alert" style={{ color: '#b42318' }}>{authError}</p>}
+
+      <HandoverPanel
+        key={`${user.uid}-${selectedRole}`}
+        user={user}
+        isManager={selectedRole === 'MANAGER'}
+        apiUrl={handoverApiUrl}
+      />
 
       <div style={{ marginBottom: '14px' }}>
         <div style={{ marginBottom: '8px', fontSize: '14px', color: '#666' }}>
