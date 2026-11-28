@@ -21,6 +21,12 @@
 
 原因：單元測試把分類器換成假的，測不到真實 Gemini 的判斷。修正方式是新增 `HandoverIntentRules`：「整理/列出/給我…交接」、「交接摘要」、「待交接」、「未完成任務」這類固定句型先用規則判斷，命中就直接走交接摘要（也省一次 Gemini 呼叫）；沒命中才交給 LLM。「請假交接」、「開立交接 Issue」屬於既有工單流程，刻意排除。
 
+修正前（員工問陳大明，走到日報檢索並回了日報原文）：
+
+![修正前](img/step2c-before-fix-employee-other.png)
+
+> 注意：修正後須**重啟後端**才會生效；`mvnw test` 不會更新已在執行的後端。
+
 ## 設計取捨
 - 作者姓名用資料庫比對，不讓 LLM 從句子猜人名，避免猜錯人導致看到別人的資料。
 - 沒有指定區間，一律用 2a 的預設（最新日報往前 14 天）；之後可再加「上週」「這個月」等時間詞。
@@ -30,7 +36,19 @@
 ## 測試
 新增 `HandoverChatHandlerTests`（人名辨識、排版、截斷、Gemini 失敗、員工查別人被擋且不呼叫模型、主管未指定對象…），並補上 `ChatAssistantServiceTests`（意圖路由、權限狀態傳遞、Prompt Injection 仍先被攔截）、`LlmIntentClassifierTests`、`DailyReportSqlRepositoryTests`。
 
-驗證指令：`.\mvnw.cmd clean test`
+驗證指令：`.\mvnw.cmd clean test`。最終結果：**122 個測試，0 失敗、0 錯誤**。
+
+![2c 測試全數通過](img/step2c-test-success.png)
 
 ## 實際畫面
-（待補：員工問「幫我整理我的交接」、員工問別人被擋、主管問「整理林小華的交接」）
+**員工問自己**：標頭、數量、待交接清單由 SQL 產生，最後是 Gemini 的交接建議；意圖標籤為 `HANDOVER_SUMMARY`。
+
+![員工查自己](img/step2c-employee-self.png)
+
+**員工問別人**：被 Layer 2 擋下，顯示「RBAC 權限不足」，沒有呼叫 Gemini。
+
+![員工查別人被擋](img/step2c-employee-denied.png)
+
+**主管問林小華**：與員工看到的數字一致。
+
+![主管查詢](img/step2c-manager-query.png)
