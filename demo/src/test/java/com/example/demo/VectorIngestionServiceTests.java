@@ -2,6 +2,7 @@ package com.example.demo;
 
 import com.example.demo.dto.ExtractedDailyReport;
 import com.example.demo.dto.RoleAccess;
+import com.example.demo.report.ReportTaskRecorder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
@@ -13,8 +14,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.RETURNS_SELF;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
@@ -143,6 +147,59 @@ class VectorIngestionServiceTests {
                         && "192.168.1.208".equals(
                                 documents.get(0).getMetadata().get("ip_address"))));
         verifyNoInteractions(knowledgeDocsVectorStore);
+    }
+
+    private VectorIngestionService serviceWithExtractedReport(ReportTaskRecorder recorder) {
+        ChatClient chatClient = mock(ChatClient.class, RETURNS_DEEP_STUBS);
+        when(chatClient.prompt()
+                        .system(anyString())
+                        .user(anyString())
+                        .call()
+                        .entity(ExtractedDailyReport.class))
+                .thenReturn(new ExtractedDailyReport(
+                        "REP-20261120-01",
+                        "林小華",
+                        LocalDate.of(2026, 11, 20),
+                        RoleAccess.MANAGER,
+                        "192.168.1.208",
+                        "完成金流模組測試"));
+        VectorIngestionService service = new VectorIngestionService(
+                mock(VectorStore.class),
+                mock(VectorStore.class),
+                new ObjectMapper().findAndRegisterModules(),
+                chatClientBuilder(chatClient),
+                false,
+                0);
+        service.setTaskRecorder(recorder);
+        return service;
+    }
+
+    @Test
+    void recordsTasksIntoSqlWithTheAuthenticatedRole() {
+        ReportTaskRecorder recorder = mock(ReportTaskRecorder.class);
+        VectorIngestionService service = serviceWithExtractedReport(recorder);
+
+        service.ingestRawReport("我是林小華，金流測試完成", RoleAccess.DEVELOPER);
+
+        verify(recorder).record(
+                eq("REP-20261120-01"),
+                eq(LocalDate.of(2026, 11, 20)),
+                eq("林小華"),
+                eq("DEVELOPER"),
+                eq("我是林小華，金流測試完成"));
+    }
+
+    @Test
+    void stillReturnsTheReportWhenSqlRecordingFails() {
+        ReportTaskRecorder recorder = mock(ReportTaskRecorder.class);
+        doThrow(new IllegalStateException("gemini down"))
+                .when(recorder).record(anyString(), any(LocalDate.class), anyString(), anyString(), anyString());
+        VectorIngestionService service = serviceWithExtractedReport(recorder);
+
+        ExtractedDailyReport result =
+                service.ingestRawReport("我是林小華，金流測試完成", RoleAccess.DEVELOPER);
+
+        assertThat(result.reportId()).isEqualTo("REP-20261120-01");
     }
 
     private static ChatClient.Builder chatClientBuilder() {

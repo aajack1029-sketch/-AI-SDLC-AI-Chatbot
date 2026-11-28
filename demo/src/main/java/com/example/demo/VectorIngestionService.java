@@ -2,12 +2,14 @@ package com.example.demo;
 
 import com.example.demo.dto.ExtractedDailyReport;
 import com.example.demo.dto.RoleAccess;
+import com.example.demo.report.ReportTaskRecorder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
@@ -39,6 +41,7 @@ public class VectorIngestionService implements CommandLineRunner {
     private final ChatClient chatClient;
     private final boolean ingestionEnabled;
     private final int ingestionLimit;
+    private ReportTaskRecorder taskRecorder;
 
     public VectorIngestionService(
             @Qualifier("knowledgeDocsVectorStore") VectorStore knowledgeDocsVectorStore,
@@ -53,6 +56,12 @@ public class VectorIngestionService implements CommandLineRunner {
         this.chatClient = chatClientBuilder.build();
         this.ingestionEnabled = ingestionEnabled;
         this.ingestionLimit = ingestionLimit;
+    }
+
+    /** 選擇性注入：有的話，新增日報時會同步把任務寫入 SQL。 */
+    @Autowired(required = false)
+    public void setTaskRecorder(ReportTaskRecorder taskRecorder) {
+        this.taskRecorder = taskRecorder;
     }
 
     public ExtractedDailyReport ingestRawReport(String rawText, RoleAccess authenticatedRole) {
@@ -118,7 +127,22 @@ public class VectorIngestionService implements CommandLineRunner {
                 finalReport.ipAddress(),
                 finalReport.summary());
         dailyReportsVectorStore.add(List.of(new Document(searchableContent, metadata)));
+        recordTasks(finalReport, rawText);
         return finalReport;
+    }
+
+    /** 任務抽取或寫入 SQL 失敗時只記警告，不影響日報已寫入向量庫。 */
+    private void recordTasks(ExtractedDailyReport report, String rawText) {
+        if (taskRecorder == null) {
+            return;
+        }
+        try {
+            taskRecorder.record(report.reportId(), report.date(), report.author(),
+                    report.roleAccess().name(), rawText);
+        } catch (RuntimeException exception) {
+            log.warn("日報 {} 已寫入向量庫，但任務抽取或寫入 SQL 失敗：{}",
+                    report.reportId(), exception.getMessage());
+        }
     }
 
     @Override
