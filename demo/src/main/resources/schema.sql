@@ -24,3 +24,9 @@ CREATE TABLE IF NOT EXISTS report_tasks (
 
 CREATE INDEX IF NOT EXISTS idx_daily_reports_author_date ON daily_reports (author, report_date);
 CREATE INDEX IF NOT EXISTS idx_report_tasks_report ON report_tasks (report_id);
+
+-- 登入帳號 (Firebase email) 與日報作者姓名的對應；員工只能看自己的交接摘要，需靠此表判斷。
+CREATE TABLE IF NOT EXISTS user_authors (
+    email  VARCHAR(200) PRIMARY KEY,
+    author VARCHAR(100) NOT NULL
+);

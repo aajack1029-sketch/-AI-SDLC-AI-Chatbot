@@ -202,3 +202,15 @@ API 連線成功率：100%（17/17 題成功回傳，0 次 429/5xx 錯誤）
 意圖分類準確率 (Intent Accuracy)：100% (13/13 題精準路由)
 
 ---
+## 結構化統計資料庫 (SQL) 與交接摘要
+
+日報的「語意內容」仍存放於 Qdrant；可做統計的欄位（進度 %、優先度、是否卡關）另存於 SQL，數字由 SQL / 程式計算，不經過 LLM。
+
+- **資料庫**：預設為本機 H2 檔案 `demo/data/daily_reports`（已加入 `.gitignore`）。可用 `APP_DB_URL`、`APP_DB_USER`、`APP_DB_PASSWORD` 改成其他資料庫（例如 MySQL）。
+- **資料表**：`daily_reports`、`report_tasks`、`user_authors`（見 `src/main/resources/schema.sql`）。
+- **範例資料**：啟動時由 `Data/mock_daily_tasks.json`（Gemini 預先抽取的結果，不會再呼叫 Gemini）匯入 SQL。重新抽取請參考 `docs/progress/step1b-task-extraction.md`。
+- **新增日報**：聊天視窗輸入「新增日報：…」時，除寫入 Qdrant，也會用 Gemini 抽取任務寫入 SQL；抽取失敗只記警告，不影響日報本身。
+- **登入帳號與作者**：`Data/user_authors.json` 設定 Firebase email 對應的日報作者姓名。新增日報的作者以登入帳號對應為準；員工只能查自己的交接摘要，主管可查任何人。沒有對應的帳號，員工查詢會被拒絕。
+- **交接摘要 API**：`GET /api/v1/handover/summary?author=&from=yyyy-MM-dd&to=yyyy-MM-dd&sort=priority|progress`（需 Bearer Token）。預設區間為該作者最新日報往前 14 天；會做任務去重、分類（DONE / IN_PROGRESS / BLOCKED / NOT_STARTED）並依優先度或進度排序。
+
+> 資料表若新增欄位，既有的本機 H2 檔案不會自動更新，請刪除 `demo/data/` 後重新啟動（範例資料會自動重新匯入）。

@@ -2,6 +2,7 @@ package com.example.demo;
 
 import com.example.demo.dto.ExtractedDailyReport;
 import com.example.demo.dto.RoleAccess;
+import com.example.demo.report.AuthorResolver;
 import com.example.demo.security.InputSanitizer;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -21,11 +22,15 @@ public class ReportController {
 
     private final VectorIngestionService ingestionService;
     private final InputSanitizer inputSanitizer;
+    private final AuthorResolver authorResolver;
 
     public ReportController(
-            VectorIngestionService ingestionService, InputSanitizer inputSanitizer) {
+            VectorIngestionService ingestionService,
+            InputSanitizer inputSanitizer,
+            AuthorResolver authorResolver) {
         this.ingestionService = ingestionService;
         this.inputSanitizer = inputSanitizer;
+        this.authorResolver = authorResolver;
     }
 
     @PostMapping(
@@ -47,7 +52,9 @@ public class ReportController {
         }
 
         ExtractedDailyReport savedReport =
-                ingestionService.ingestRawReport(request.rawText(), authenticatedRole);
+                ingestionService.ingestRawReport(
+                        request.rawText(), authenticatedRole,
+                        authorResolver.resolve(authentication).orElse(null));
         return ResponseEntity.ok(new IngestResponse("INGESTED", savedReport));
     }
 

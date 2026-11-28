@@ -202,6 +202,26 @@ class VectorIngestionServiceTests {
         assertThat(result.reportId()).isEqualTo("REP-20261120-01");
     }
 
+    @Test
+    void authenticatedAuthorOverridesTheAuthorReadFromTheText() {
+        VectorStore dailyReportsVectorStore = mock(VectorStore.class);
+        ChatClient chatClient = mock(ChatClient.class, RETURNS_DEEP_STUBS);
+        when(chatClient.prompt().system(anyString()).user(anyString()).call()
+                        .entity(ExtractedDailyReport.class))
+                .thenReturn(new ExtractedDailyReport(
+                        null, "陳大明", LocalDate.of(2026, 11, 20), RoleAccess.DEVELOPER, "NONE", "完成測試"));
+        VectorIngestionService service = new VectorIngestionService(
+                mock(VectorStore.class), dailyReportsVectorStore, new ObjectMapper().findAndRegisterModules(),
+                chatClientBuilder(chatClient), false, 0);
+
+        ExtractedDailyReport result =
+                service.ingestRawReport("我是陳大明，完成測試", RoleAccess.DEVELOPER, "林小華");
+
+        assertThat(result.author()).isEqualTo("林小華");
+        verify(dailyReportsVectorStore).add(argThat(documents ->
+                "林小華".equals(documents.get(0).getMetadata().get("author"))));
+    }
+
     private static ChatClient.Builder chatClientBuilder() {
         return chatClientBuilder(mock(ChatClient.class));
     }

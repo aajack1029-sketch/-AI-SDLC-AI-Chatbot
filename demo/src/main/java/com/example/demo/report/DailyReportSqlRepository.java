@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 日報結構化資料的 SQL 存取層。
@@ -102,5 +103,50 @@ public class DailyReportSqlRepository {
                         rs.getDouble("avg_progress"),
                         rs.getLong("blocked_count")))
                 .list();
+    }
+
+    /** 交接摘要用：單一任務與它所屬日報的日期、編號。 */
+    public record TaskRow(
+            String reportId, LocalDate reportDate, String taskName, int progressPercent,
+            TaskPriority priority, boolean blocked, String blockerNote) {
+    }
+
+    /** 作者在日期區間內、且呼叫者有權限看的任務 (依日報日期由舊到新)。 */
+    public List<TaskRow> findTaskRows(String author, LocalDate from, LocalDate to, List<String> accessibleRoles) {
+        return jdbc.sql("""
+                SELECT r.report_id, r.report_date, t.task_name, t.progress_percent,
+                       t.priority, t.is_blocked, t.blocker_note
+                FROM daily_reports r
+                JOIN report_tasks t ON t.report_id = r.report_id
+                WHERE r.author = :author
+                  AND r.report_date BETWEEN :from AND :to
+                  AND r.role_access IN (:roles)
+                ORDER BY r.report_date, r.report_id, t.id
+                """)
+                .param("author", author)
+                .param("from", Date.valueOf(from))
+                .param("to", Date.valueOf(to))
+                .param("roles", accessibleRoles)
+                .query((rs, rowNum) -> new TaskRow(
+                        rs.getString("report_id"),
+                        rs.getDate("report_date").toLocalDate(),
+                        rs.getString("task_name"),
+                        rs.getInt("progress_percent"),
+                        TaskPriority.valueOf(rs.getString("priority")),
+                        rs.getBoolean("is_blocked"),
+                        rs.getString("blocker_note")))
+                .list();
+    }
+
+    /** 作者 (在呼叫者有權限看的日報中) 最新的日報日期。 */
+    public Optional<LocalDate> latestReportDate(String author, List<String> accessibleRoles) {
+        return jdbc.sql("""
+                SELECT MAX(report_date) FROM daily_reports
+                WHERE author = :author AND role_access IN (:roles)
+                """)
+                .param("author", author)
+                .param("roles", accessibleRoles)
+                .query((rs, rowNum) -> rs.getDate(1) == null ? null : rs.getDate(1).toLocalDate())
+                .list().stream().filter(java.util.Objects::nonNull).findFirst();
     }
 }
