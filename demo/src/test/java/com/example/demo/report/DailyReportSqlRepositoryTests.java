@@ -38,6 +38,18 @@ class DailyReportSqlRepositoryTests {
     }
 
     @Test
+    void listsDistinctAuthorsInOrder() {
+        repository.save(report("REP-A1", "陳大明", "2026-10-01",
+                new StructuredTask("任務一", 10, TaskPriority.LOW, false, null)));
+        repository.save(report("REP-A2", "陳大明", "2026-10-02",
+                new StructuredTask("任務二", 20, TaskPriority.LOW, false, null)));
+        repository.save(report("REP-A3", "林小華", "2026-10-02",
+                new StructuredTask("任務三", 30, TaskPriority.LOW, false, null)));
+
+        assertThat(repository.findAuthors()).containsExactlyInAnyOrder("陳大明", "林小華").hasSize(2);
+    }
+
+    @Test
     void savesReportAndReadsTasksBack() {
         repository.save(report("REP-1", "陳大明", "2026-10-01",
                 new StructuredTask("建置 API", 60, TaskPriority.HIGH, false, null),

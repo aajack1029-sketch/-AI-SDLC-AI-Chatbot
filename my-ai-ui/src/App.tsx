@@ -223,6 +223,10 @@ function App() {
       question: '最近有哪些工作日報提到測試？',
     },
     {
+      label: '📋 HANDOVER_SUMMARY・交接摘要',
+      question: '幫我整理我的交接',
+    },
+    {
       label: '🐙 GITHUB_SDLC・GitHub Issue',
       question: '請說明測試 Issue 的內容',
       filters: { eventType: 'issue' },
@@ -573,7 +577,7 @@ function App() {
 
       <div style={{ marginBottom: '14px' }}>
         <div style={{ marginBottom: '8px', fontSize: '14px', color: '#666' }}>
-          快速體驗三種資料情境：
+          快速體驗四種資料情境：
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {quickScenarios.map((scenario) => (

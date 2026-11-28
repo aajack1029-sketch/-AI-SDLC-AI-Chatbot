@@ -149,4 +149,11 @@ public class DailyReportSqlRepository {
                 .query((rs, rowNum) -> rs.getDate(1) == null ? null : rs.getDate(1).toLocalDate())
                 .list().stream().filter(java.util.Objects::nonNull).findFirst();
     }
+
+    /** 資料庫中所有日報作者的姓名 (不含權限判斷，只用來辨識使用者問題裡提到的人名)。 */
+    public List<String> findAuthors() {
+        return jdbc.sql("SELECT DISTINCT author FROM daily_reports WHERE author IS NOT NULL ORDER BY author")
+                .query((rs, rowNum) -> rs.getString(1))
+                .list();
+    }
 }
