@@ -32,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(properties = {
 		"spring.ai.google.genai.api-key=test-api-key",
 		"app.embedding.api-key=test-api-key",
+		"app.ingestion.enabled=true",
 		"app.ingestion.limit=1",
 		"spring.datasource.url=jdbc:h2:mem:demo-app-tests;DB_CLOSE_DELAY=-1",
 		"JWT_ISSUER_URI=https://issuer.example.test"
