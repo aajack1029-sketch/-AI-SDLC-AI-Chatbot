@@ -65,6 +65,15 @@ public class VectorIngestionService implements CommandLineRunner {
     }
 
     public ExtractedDailyReport ingestRawReport(String rawText, RoleAccess authenticatedRole) {
+        return ingestRawReport(rawText, authenticatedRole, null);
+    }
+
+    /**
+     * @param authenticatedAuthor 由登入帳號對應出的作者姓名；有值時覆蓋 Gemini 從文字讀出的作者，
+     *                            避免用 A 的帳號輸入「我是 B…」而記在 B 名下。
+     */
+    public ExtractedDailyReport ingestRawReport(
+            String rawText, RoleAccess authenticatedRole, String authenticatedAuthor) {
         if (!StringUtils.hasText(rawText)) {
             throw new IllegalArgumentException("rawText must not be blank");
         }
@@ -102,7 +111,7 @@ public class VectorIngestionService implements CommandLineRunner {
                         + "-" + UUID.randomUUID().toString().toUpperCase(Locale.ROOT);
         ExtractedDailyReport finalReport = new ExtractedDailyReport(
                 reportId,
-                extracted.author(),
+                StringUtils.hasText(authenticatedAuthor) ? authenticatedAuthor : extracted.author(),
                 extracted.date(),
                 effectiveRole,
                 extracted.ipAddress(),

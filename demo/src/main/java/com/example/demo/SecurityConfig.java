@@ -62,6 +62,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/v1/chat/**").hasAnyRole("DEVELOPER", "MANAGER")
                         .requestMatchers("/api/v1/reports/**").hasAnyRole("DEVELOPER", "MANAGER")
+                        .requestMatchers("/api/v1/handover/**").hasAnyRole("DEVELOPER", "MANAGER")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(resourceServer -> resourceServer
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
@@ -84,7 +85,7 @@ public class SecurityConfig {
             @Value("${app.cors.allowed-origin:http://localhost:5173}") String allowedOrigin) {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(allowedOrigin));
-        configuration.setAllowedMethods(List.of("POST", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setExposedHeaders(List.of("WWW-Authenticate"));
         configuration.setAllowCredentials(false);
@@ -92,6 +93,7 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/v1/chat/**", configuration);
         source.registerCorsConfiguration("/api/v1/reports/**", configuration);
+        source.registerCorsConfiguration("/api/v1/handover/**", configuration);
         return source;
     }
 }
